@@ -1,0 +1,44 @@
+---
+title: "NUMERO DE VEHICULOS REGISTRADOS EN EL SISTEMA DE TRANSITO NACIONAL"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r, echo=FALSE}
+##Carga de librerias
+library("readxl")
+library("DT")
+library("tidyverse")
+library("lubridate")
+```
+
+
+```{r, echo=FALSE}
+#Carga de datos
+#La carga de los datos es mejor realizarla con la librería read_excel, si lo hacemos como lo hicimos en el trabajo pasado, genera errores o se cargan los datos mal (traté con varios encoding y todos generaban errores).
+
+db=read_excel("C:/Users/USER/Documents/TAE_Prediccion del numero de vehiculos registrados en el sistema de transito nacional/registros_autos_entrenamiento.xlsx")
+```
+
+
+```{r, echo=FALSE}
+#Depuraciones Iniciales
+db <- db %>% 
+  mutate(Fecha = as.Date(Fecha)) %>% 
+  mutate(dia = day(Fecha)) %>% 
+  mutate(mes = month(Fecha)) %>% 
+  mutate(anno = year(Fecha))%>%
+  mutate(dia_semana = weekdays(Fecha))
+db$Fecha<-NULL
+```
+
+```{r, echo=FALSE}
+
+
+```
+
