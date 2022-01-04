@@ -1,0 +1,157 @@
+---
+title: "NUMERO DE VEHICULOS REGISTRADOS EN EL SISTEMA DE TRANSITO NACIONAL"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+
+```{r, echo=FALSE}
+##Carga de librerias
+library("readxl")
+library("DT")
+library("tidyverse")
+library("lubridate")
+library("plotly")
+library("summarytools")
+library("zoo")
+library("forcats")
+```
+
+
+```{r, echo=FALSE}
+#Carga de datos
+#La carga de los datos es mejor realizarla con la librería read_excel, si lo hacemos como lo hicimos en el trabajo pasado, genera errores o se cargan los datos mal (traté con varios encoding y todos generaban errores).
+
+db=read_excel("autos.xlsx")
+```
+
+# Análisis descriptivo
+
+La base de datos que se va a emplear para proyectar el número de vehículos a registrar en el **Registro Único Nacional de Tránsito**, ***RUNT*** contiene un registro del número de vehículos que han sido registrados diariamente entre el primero de enero de 2012 (2012-01-01) y el 31 de diciembre de 2017 (2017-12-31), lo que implica que parte con solo dos variables: la fecha y el número de vehículos registrados en el RUNT en cada fecha, con 2,192 observaciones que abarcan la totalidad de días que transcurrieron entre las dos fechas límite. Con esto claro, se desarrolla la siguiente serie de tiempo que ilustra el número de vehículos registrados por día.
+
+```{r}
+glimpse(db)
+```
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+g1 <- ggplot(db, aes(x = as.Date(Fecha), y = Unidades)) +
+      geom_line(size = 0.1, color = "#4d85ea") +
+      ggtitle("Número de vehículos registrados en el RUNT¹ por día",
+              subtitle = "¹ Registro Único Nacional de Tránsito") +
+      xlab("Fecha [AAAA-MM-DD]") +
+      ylab("Vehículos registrados") +
+      scale_x_date(date_labels = "%b'%y",
+                   date_minor_breaks = "3 month") +
+      theme_light()
+ggplotly(g1)
+```
+De este gráfico se pueden destacar varias cosas. La primera de ellas es que la venta de vehículos presenta con bastante frecuencias días con cero registros nuevos, aspecto que se indagará más adelante. Asimismo, parece que las ventas medias se preservan en la mayor parte del año, con un pequeño pico al finalizar el primer trimestre y otro más destacado finalizando el año. Asimismo, se puede ver que el número de vehículos registrados en el RUNT parece tener un decenso a partir del año 2016, pues antes de este año es frecuente que se superasen los mil carros registrados por día, toda vez que a partir de este año esto pasa a ser menos frecuente. Así, considerando estos datos, se obtienen los siguientes resúmenes numéricos para el número de vehículos registrado por día:
+
+```{r, include = FALSE}
+descr(db)
+```
+
+| Parámetro                | Valor  |
+|--------------------------|--------|
+| Media                    | 782.17 |
+| Desviación estándar      | 551.16 |
+| Mínimo                   | 0      |
+| Primer cuantil (Q1)      | 293    |
+| Mediana (Q2)             | 865.5  |
+| Tercer cuantil (Q3)      | 1,173  |
+| Máximo (Q4)              | 3,603  |
+| Rango intercuartídico    | 880    |
+| Coeficiente de variación | 0.7    |
+| Coeficiente de asimetría | 0.05   |
+| Curtosis                 | 0.35   |
+
+Como se observa, cada día entre los años 2012 y 2017 (inclusive) se registraron 782.17 vehículos en el RUNT en promedio, con una desviación estándar de 551.16 vehículos por día, y presentando un mínimo en cero vehículos por día (lo cual sucede durante varios días como se podrá verificar más adelante), y un máximo de 3,603 vehículos, lo cual ocurrió el 29 de diciembre del 2016. Además, se tiene que la mediana se da en 865.5 vehículos, lo que quiere decir que en al menos la mitad de los días del periodo mencionado se registraron 366 vehículos o más, y en el resto de días 365 vehículos o menos. Por último, se debe destacar que el coeficiente de variación es de 0.7 (70%), lo que muestra que el promedio no es representativo del conjunto de datos; asimismo, el coeficiente de asimetría es de 0.05, lo cual muestra que los datos están concentrados hacia el promedio de 782.17 vehículos registrados por día en el RUNT, pero con una ligera tendencia hacia un menor número de registros diarios, toda vez que la curtosis de 0.35, lo que implica que la distribución presenta una menor cantidad de datos atípicos comparado con una distribución normal y una mayor concentración alrededor de su media. Esto se ilustra bien mediante el siguiente gráfico:
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+g2 <- ggplot(db, aes(x = Unidades)) +
+      geom_histogram(fill = "#4d85ea") +
+      theme_light() +
+      ggtitle("Frecuencia del número de vehículos registrados en el RUNT¹ por día",
+              subtitle = "¹ Registro Único Nacional de Tránsito") +
+      xlab("Número de vehículos registrados por día") +
+      ylab("Frecuencia absoluta")
+ggplotly(g2)
+```
+
+Como se aprecia, lo más frecuente es que en un día se inscriban en el RUNT entre cero y 124 vehpiculos aproximadamente, ya que esto sucedió en 422 de los 2,192 días que abarca el periodo de interés, seguido por entre 746 y 870 vehículos por día, pues en 239 días se registraron un número de vehículos incluido en tal intervalo. De la misma forma, destaca el hecho de que hay pocos días que tengan dos mil o más vehículos registrados por día.
+
+Ahora bien, con el objetivo de entender mejor la dinámica de venta de vehículos, vale la pena observar el comportamiento por mes, año, semana y día de la semana, para lo cual se van a crear tales variables auxiliares con ayuda de $\color{blue}{\textsf{R}}$, lo cual deja la estructura de la base de datos como sigue:
+
+
+```{r, echo=FALSE}
+#Depuraciones Iniciales
+db <- db %>% 
+  mutate(Fecha = as.Date(Fecha)) %>% 
+  mutate(dia = day(Fecha)) %>% 
+  mutate(mes = month(Fecha)) %>% 
+  mutate(anno = year(Fecha))%>%
+  mutate(dia_semana = weekdays(Fecha)) %>% 
+  mutate(semana = week(Fecha))
+# db$Fecha<-NULL
+```
+
+```{r}
+glimpse(db)
+```
+
+Y con esto, se va a revisar el comportamiento por mes entre el 2012 y el 2017 (inclusive) del registro de vehículos en el RUNT mediante la siguiente serie de tiempo:
+
+```{r}
+dbMesano <- db %>% 
+  group_by(anno, mes) %>% 
+  summarise(Unidades = sum(Unidades))
+```
+```{r}
+dbMesano <- dbMesano %>%
+  mutate("Mes" = paste(mes, anno, sep = "-")) %>% 
+  mutate("Mes" = ifelse(nchar(Mes) < 7, paste0("0", Mes), Mes)) %>% 
+  mutate("Mes" = as.yearmon(Mes, format = "%m-%Y"))
+```
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+g3 <- ggplot(dbMesano, aes(x = Mes, y = Unidades)) +
+      geom_line(color = "#4d85ea") +
+      ggtitle("Número de vehículos registrados en el RUNT¹ por mes",
+              subtitle = "¹ Registro Único Nacional de Tránsito") +
+      xlab("Fecha [mmm - AAAA]") +
+      ylab("Vehículos registrados")
+      theme_light()
+ggplotly(g3)
+```
+Y como se puede observar, no se puede hablar de que haya una cantidad semejante de vehículos vendidos por mes, ya que en cada año se puede observar que hay una tendencia a la baja al iniciar en el año, pues en cada uno de los meses de enero hay un mínimo de vehículos registrados en el RUNT para sus respectivos años, ocurriendo luego un incremento hacia los meses de marzo, abril y mayo para mantenerse en niveles semejantes hasta que se presenta un máximo en el mes de diciembre, siendo el más destacado el del año 2014, ya que en dicho diciembre se registraron 40,518 vehículos. Así mismo, se evidencia nuevamente una tendencia bajista en el comportamiento global, ya que hay un menor número de registros hacia los años 2018 y 2017 comparado con los demás, siendo 2014 el año con mejores registros, como se verá más adelante. Ahora, se va a analizar el número de vehículos registrados por mes sin importar el año.
+
+```{r}
+dbMes <- dbMesano %>% 
+  group_by(mes) %>% 
+  summarise(Unidades = sum(Unidades))
+```
+
+```{r}
+meses <- c("Enero","Febrero","Marzo",
+            "Abril","Mayo","Junio",
+            "Julio","Agosto","Septiembre",
+            "Octubre","Noviembre","Diciembre")
+dbMes$mesab <- meses[ dbMes$mes ]
+dbMes$mes <- NULL
+```
+
+```{r}
+g4 <- ggplot(dbMes, aes(x = (mesab), y = (Unidades))) +
+      geom_bar(stat = "identity", fill = "#4d85ea") +
+      theme_light() + 
+      ggtitle("Número de vehículos registrados en el RUNT por mes") +
+      xlab("Mes") +
+      ylab("Vehículos registrados") +
+   scale_x_discrete(guide = guide_axis(angle = 30))
+g4
+```
+
+Y se observa algo que fue confirmado previamente y es que diciembre es el mes con más registros diarios en el RUNT, toda vez que enero es el que menos. Asimismo, se observa que en el resto de meses se estabiliza aproximadamente el registro con al menos de 15,000 registros por mes, siendo febrero y una excepción probablemente por una recuperación luego del mínimo de enero.
