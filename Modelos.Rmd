@@ -1,0 +1,116 @@
+---
+title: "Modelos"
+author: "Deivid Zhang Figueroa"
+date: "11/1/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Parte - Deivid
+
+## Librerías
+```{r}
+library(car)
+library(perturb)
+library(leaps)
+library(dplyr)
+library(olsrr)
+library(gbm)
+library(caret)
+library(Metrics)
+```
+
+## Modelo de regresion lineal
+
+
+
+### Ajuste de los modelos
+
+### Modelo con todas las predictoras
+
+```{r}
+mod = lm(Unidades~.,db)
+```
+
+```{r}
+summary(mod)
+```
+
+Tiene un $$R_{adj}^2$$ de 0.6804.
+
+```{r}
+# Gráfico de normalidad para los residuales estudentizados
+
+residualPlots(mod,tests=FALSE,type="rstudent",quadratic=FALSE,col=2,cex=1.5)
+test=shapiro.test(rstudent(mod)) #Test de normalidad sobre residuales estudentizados
+qqnorm(rstudent(mod),cex=2)
+
+qqline(rstudent(mod),col=2)
+legend("topleft",legend=rbind(c("Statistic W","p.value"),
+round(c(test$statistic,test$p.value),digits=5)),cex=1.2)
+```
+
+Los residuales no se distribuyan normal, por lo que este modelo no cumple con los supuestos.
+
+Encontremos otros modelos...
+
+```{r, warning = FALSE, message = FALSE}
+#Todas las regresiones posibles; da información del Cp, R2, R2adj
+k=ols_step_all_possible(mod)
+format(k[, c(1:5, 7)], scientific = FALSE, digits = 4)
+plot(k)
+```
+
+Los mejores modelos para estos criterios son el modelo 1, 7, 22, 42, 57 y 63, por el principio de parsimonia, se elige el modelo 7 y se pone aprueba si este cumple con los supuestos...
+
+#### Modelo 7
+
+```{r}
+mod7 = lm(Unidades ~ dia + dia_semana, data = db)
+```
+
+```{r}
+summary(mod7)
+```
+
+```{r}
+# Gráfico de normalidad para los residuales estudentizados
+
+residualPlots(mod7,tests=FALSE,type="rstudent",quadratic=FALSE,col=2,cex=1.5)
+test=shapiro.test(rstudent(mod)) #Test de normalidad sobre residuales estudentizados
+qqnorm(rstudent(mod7),cex=2)
+
+qqline(rstudent(mod7),col=2)
+legend("topleft",legend=rbind(c("Statistic W","p.value"),
+round(c(test$statistic,test$p.value),digits=5)),cex=1.2)
+```
+
+Veamos que este modelo tampoco cumple con los supuestos de un MRLM.
+
+No se puede usar regresión en este caso.
+
+# Modelo gbm
+```{r}
+db$dia_semana = as.factor(db$dia_semana)
+db$dia = as.factor(db$dia)
+db$mes = as.factor(db$mes)
+db$anno = as.factor(db$anno)
+db$semana = as.factor(db$semana)
+```
+
+
+```{r}
+mod_gbm = gbm(Unidades ~ dia + dia_semana + mes + anno + semana, data = db, distribution = "gaussian", shrinkage = 0.3, n.trees = 100)
+```
+
+```{r}
+predichos <- predict(mod_gbm)
+```
+
+```{r}
+mape(db$Unidades,predichos)
+```
+
