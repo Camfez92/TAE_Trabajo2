@@ -155,3 +155,51 @@ g4
 ```
 
 Y se observa algo que fue confirmado previamente y es que diciembre es el mes con más registros diarios en el RUNT, toda vez que enero es el que menos. Asimismo, se observa que en el resto de meses se estabiliza aproximadamente el registro con al menos de 15,000 registros por mes, siendo febrero y una excepción probablemente por una recuperación luego del mínimo de enero.
+
+# Creación de más variables
+
+Con el fin de generar un modelo de predicción de vehículos registrados en el RUNT durante en el 2018, se van a crear algunas variables adicionales que podrían incidir positivamente en la forma en la que los diferentes modelos a plantear trabajar. Se debe tener en cuenta que lo buenas que resulten dichas variables solo será descubierto una vez se generen los diferentes modelos.
+
+## TRM del día.
+
+Colombia es un país con un débil aparato productivo de vehículos, lo cual se refleja en que en el 2019 se produjeron solo 127,541 vehículos en Colombia (lo cual resulta bajo comparado con los más de 3.9 millones de vehículos fabricados en México) y que contraste con los 223,755 vehículos de uso particular que fueron vendidos en el país durante el mismo año [1]. En ese sentido, es fundamental para abastecer la demanda de vehículos del país buscar en los mercados internacionales tales vehículos, y así, teniendo en cuenta que estas operaciones se tranzan generalmente dólares estadounidenses (USD), se puede considerar el precio de esta divisa en cada día, para lo cual resulta útil consultar el histórico de la tasa representativa del mercado (TRM) calculado por el Banco de la República al final de cada día [2].
+
+```{r}
+trm = read_excel("TRM.xlsx")
+```
+
+```{r}
+# Cambio del tipo de formato de la variable "Fecha" en la base de datos 'TRM'.
+trm <- trm %>%
+  mutate(Fecha = as.Date(Fecha))
+```
+
+```{r}
+# Adición de esta variable a la base de datos
+db <- merge(x = db, y = trm, by = "Fecha")
+```
+
+# Precio del barril de petróleo Brent
+
+Colombia es un exportador neto de crudo, cuyo precio por las características del petróleo en el país está determinado por el barril Went, el cual se negocia en los mercados internacionales día y día y que, considerando la pobre capacidad del país para producir derivados como la gasolina, estos productos de valor agregado deben ser importados para poder dar abastecer la demanda nacional. Así, considerando que una de las variables que afecta el precio de la gasolina es el precio del petróleo, se va a considerar la cotización diaria de este *commodity*.
+
+# Elementos de la fecha
+
+Para poder identificar patrones estacionarios y otros asociados con el tiempo, se van a crear las siguientes variables:
+
+- *Día.* Identifica el día del mes de cada fecha.
+- *Mes.* Identifica el mes del año de cada fecha.
+- *Año.* Identifica el año de cada fecha.
+- *Día de la semana.* Identifica el día de la semana de cada fecha (ej.: lunes, martes, miércoles, etc.)
+- *Semana del año.* Identifica la semana del año asociada a cada fecha, considerando que los primeros siete días del año siempre conformarán la primera semana sin importar el día de la semana asociado a cada uno de estos.
+
+```{r}
+save(db, file = "RUNT.RData")
+```
+
+
+# Referencias
+
+[1] PROCOLOMBIA. "Industria automotriz en Colombia". Procolombia. https://www.colombiatrade.com.co/noticias/industria-automotriz-en-colombia (accedido el 8 de enero de 2022).
+
+[2] Banco de la República de Colombia. "Tasa representativa del mercado (TRM - peso por dólar)". Banco de la República. https://www.banrep.gov.co/es/estadisticas/trm (accedido el 8 de enero de 2022).
