@@ -1,0 +1,169 @@
+---
+title: "Ensayos"
+author: "Simón Cuartas Rendón"
+date: "12/1/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(caret)
+```
+
+```{r}
+load("RUNT.RData")
+```
+
+### Normalización
+
+Se comienza realizando una normalización de la base datos con el objetivo de reducir la variabilidad del error de validación.
+
+```{r}
+x = scale(db, center = TRUE, scale = TRUE)
+x = as.data.frame(x)
+```
+
+```{r}
+pairs(x)
+```
+
+### Conjuntos de validación y de entrenamiento
+
+```{r}
+n = dim(x)[1]
+n.vl = round(n*0.25)
+set.seed(20220109)
+ind.vl = sample(1:n, n.vl, replace = FALSE)
+
+# Para las variables regresoras
+x.vl = x[ind.vl, -1]
+x.tr = x[-ind.vl, -1]
+
+# Para la variable de respuesta
+y.tr = x$Unidades[-ind.vl]
+y.vl = x$Unidades[ind.vl]
+```
+
+# Modelo lineal múltiple
+
+El modelo de regresión lineal múltiple completo, esto es, incluyendo a todas las variables regresoras, está dado por:
+
+```{r}
+mod.lineal = lm(Unidades~.,
+                data = db,
+                subset = - ind.vl)
+```
+
+```{r}
+summary(mod.lineal)
+```
+
+# Elastic net
+
+Para poder emplear el modelo *elastic net*, es necesario comenzar planteando una grilla de hiperpárametros con los cuales se puedan generar varios modelos y así poder generar el vector de hiperpárametros $(\alpha, \lambda)$ que mejores resultados produzca:
+
+```{r}
+hiperparametros = expand.grid(
+  alpha = (0:100)/100,
+  lambda = 10^(-5:2)
+)
+
+control.optimizacion = trainControl(method = "LGGOCV", number = 10, p = 0.2)
+```
+
+```{r}
+mod.en = train(
+  Unidades~.,
+  data = db,
+  method = "glmnet",
+  trControl = control.optimizacion,
+  tuneGrid = hiperparametros
+)
+```
+***Error. Not a recognized resampling method.***
+
+```{r}
+library(glmnet)
+```
+```{r}
+x.train = as.matrix(x.tr)
+y.train = as.vector(y.tr)
+x.test = as.matrix(x.vl)
+y.test = as.vector(y.vl)
+```
+
+
+```{r}
+alpha0.5fit = cv.glmnet(x.train, y.train, type.measure = "mse",
+                        alpha = 0.5, family = "gaussian")
+
+alpha0.5predicted = predict(alpha0.5fit, s = alpha0.5fit$lambda.1se,
+                            newx = x.test)
+```
+
+```{r}
+rss0.5 = sum((y.test - alpha0.5predicted)^2)
+tss0.5 = sum((y.test - mean(y.test))^2)
+rsqrt = 1 - rss0.5/tss0.5
+rsqrt
+```
+```{r}
+list.of.fits = list()
+for (i in 0:20) {
+  fit.name = paste0("alpha", i/20)
+  
+  list.of.fits[[fit.name]] = cv.glmnet(x.train, y.train, type.measure = "mse",
+                                       alpha = i/20, family = "gaussian")
+}
+results = data.frame()
+```
+
+```{r}
+for(i in 0:20) {
+  fit.name = paste0("alpha", i/20)
+  
+  predicted = predict(list.of.fits[[fit.name]],
+                      s = list.of.fits[[fit.name]]$lambda.1se,
+                      newx = x.test)
+  rss = sum((y.test - predicted)^2)
+  tss = sum((y.test - mean(y.test))^2)
+  temp = data.frame(alpha = i/20, rss = rss, tss = tss, r2 = (1 - rss/tss),
+                    fit.name = fit.name)
+  results = rbind(results, temp)
+}
+```
+
+```{r}
+results
+```
+# Máquina de soporte vectorial
+
+```{r}
+library(quantmod)
+library(e1071)
+```
+```{r}
+mod.svm = svm(Unidades~.,
+              data = db,
+              kernel = "linear",
+              cost = 1,
+              epsilon = 0.1,
+              subset = - ind.vl)
+```
+
+```{r}
+mod.svm.pred = predict(mod.svm,
+                       newx = x.test)
+```
+
+```{r}
+rss.svm = mean((y.test - mod.svm.pred)^2)
+tss.svm = mean((y.test - mean(y.test))^2)
+rsqrt.svm = 1 - rss.svm/tss.svm
+rsqrt.svm
+```
+

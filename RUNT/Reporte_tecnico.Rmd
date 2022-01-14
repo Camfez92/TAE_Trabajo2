@@ -29,6 +29,11 @@ library("forcats")
 db=read_excel("autos.xlsx")
 ```
 
+```{r}
+save(db, file = "Autos.RData")
+```
+
+
 # Análisis descriptivo
 
 La base de datos que se va a emplear para proyectar el número de vehículos a registrar en el **Registro Único Nacional de Tránsito**, ***RUNT*** contiene un registro del número de vehículos que han sido registrados diariamente entre el primero de enero de 2012 (2012-01-01) y el 31 de diciembre de 2017 (2017-12-31), lo que implica que parte con solo dos variables: la fecha y el número de vehículos registrados en el RUNT en cada fecha, con 2,192 observaciones que abarcan la totalidad de días que transcurrieron entre las dos fechas límite. Con esto claro, se desarrolla la siguiente serie de tiempo que ilustra el número de vehículos registrados por día.
@@ -93,7 +98,7 @@ db <- db %>%
   mutate(dia = day(Fecha)) %>% 
   mutate(mes = month(Fecha)) %>% 
   mutate(anno = year(Fecha))%>%
-  mutate(dia_semana = weekdays(Fecha)) %>% 
+  mutate(dia_semana = wday(Fecha)) %>% 
   mutate(semana = week(Fecha))
 # db$Fecha<-NULL
 ```
