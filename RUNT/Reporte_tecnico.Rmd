@@ -1,7 +1,20 @@
 ---
-title: "NUMERO DE VEHICULOS REGISTRADOS EN EL SISTEMA DE TRANSITO NACIONAL"
-output: html_document
+title: "Transformaciones finales de la base de datos"
+author: "Equipo de TAE"
+date: "Enero 17 de 2022"
+output:
+  html_document:
+    code_folding: show
+    toc: true
+    theme: paper
+    df_print: paged
+    number_sections: true
 ---
+
+<style>
+body {
+text-align: justify}
+</style>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -432,7 +445,7 @@ mod.arbol = train(Unidades~.,
 mod.arbol
 ```
 
-Ahora bien, al implementar árboles de decisión, se evidencia que el valor del $R^2$ varía notablemente según la profundidad máxima permitida, mejorando progresivamente al evaluar entre uno y tres (inclusive) nodos, alcanzando un pico $R^2 = 0.7317$ cuando se consideran tres nodos como máximo. No obstante, para poder tener una mejor panorámica del alcance de este modelo, se va a generar una grilla que permita evaluar más modelos con árboles de decisión para así escoger el número óptimo de profundidad máxima permitida.
+Ahora bien, al implementar árboles de decisión, se evidencia que el valor del $R^2$ varía notablemente según la nivel máximo permitida, mejorando progresivamente al evaluar entre uno y tres (inclusive) nodos, alcanzando un pico $R^2 = 0.7317$ cuando se consideran tres nodos como máximo. No obstante, para poder tener una mejor panorámica del alcance de este modelo, se va a generar una grilla que permita evaluar más modelos con árboles de decisión para así escoger el número óptimo de nivel máximo permitida.
 
 ```{r}
 grilla.arbol = expand.grid(maxdepth = seq(1, 20))
@@ -463,6 +476,86 @@ pred.knn = pred.knn %>%
   rename("Fecha" = "dias18") %>% 
   mutate(Unidades = round(Unidades))
 ```
+
+```{r}
+g1 <- ggplot(pred.knn, aes(x = as.Date(Fecha), y = Unidades)) +
+      geom_line(size = 0.1, color = "#4d85ea") +
+      ggtitle("Número de vehículos registrados en el RUNT¹ por día",
+              subtitle = "¹ Registro Único Nacional de Tránsito") +
+      xlab("Fecha [AAAA-MM-DD]") +
+      ylab("Vehículos registrados") +
+      scale_x_date(date_labels = "%b'%y",
+                   date_minor_breaks = "3 month") +
+      theme_light()
+ggplotly(g1)
+```
+```{r}
+original = as.data.frame(db[, 1])
+dias1217 = seq(as.Date("2012-01-01"), as.Date("2017-12-31"), by = "days")
+original = cbind(dias1217, original)
+```
+
+```{r}
+original = original %>% 
+  rename("Unidades" = "db[, 1]")
+
+original = original %>% 
+  rename("Fecha" = "dias1217")
+```
+
+```{r}
+totalidad = rbind(original, pred.knn)
+```
+
+```{r}
+g8 <- ggplot(totalidad, aes(x = as.Date(Fecha), y = Unidades)) +
+      geom_line(size = 0.1, color = "#4d85ea") +
+      ggtitle("Número de vehículos registrados en el RUNT¹ por día",
+              subtitle = "¹ Registro Único Nacional de Tránsito") +
+      xlab("Fecha [AAAA-MM-DD]") +
+      ylab("Vehículos registrados") +
+      scale_x_date(date_labels = "%b'%y",
+                   date_minor_breaks = "3 month") +
+      theme_light()
+ggplotly(g8)
+```
+# Borrador
+
+```{r}
+# Ensayo con el modelo de KNN para los años 2012 a 2017
+pred.total = predict(modelo.knn.grilla,
+                     newdata = db[, -c(1)])
+pred.total = as.data.frame(pred.total)
+pred.total = cbind(dias1217, pred.total)
+```
+
+```{r}
+pred.total = pred.total %>% 
+  rename("Unidades" = "pred.total") %>% 
+  rename("Fecha" = "dias1217") %>% 
+  mutate(Unidades = round(Unidades))
+```
+
+```{r}
+g9 <- ggplot() +
+      geom_line(data = pred.total, mapping = aes(x = as.Date(Fecha), y = Unidades),
+                size = 0.1, color = "red") +
+      ggtitle("Número de vehículos registrados en el RUNT¹ por día",
+              subtitle = "¹ Registro Único Nacional de Tránsito") +
+      xlab("Fecha [AAAA-MM-DD]") +
+      ylab("Vehículos registrados") +
+      scale_x_date(date_labels = "%b'%y",
+                   date_minor_breaks = "3 month") +
+      theme_light()
+ggplotly(g9)
+```
+
+```{r}
+# Archivos planos
+write.csv(pred.total, "prediccion_2012-2017.csv")
+write.csv(pred.knn, "prediccion_2018.csv")
+```
+
 
 # Referencias
 

@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(caret)
+library(tidyverse)
 ```
 
 ```{r}
@@ -203,7 +204,7 @@ mod.knn.scale
 # KNN con preprocesamiento y grid search para k
 
 ```{r}
-grilla.knn = expand.grid(k = seq(1, 101, 4))
+grilla.knn = expand.grid(k = seq(1, 101))
 ```
 
 ```{r}
@@ -255,6 +256,23 @@ pred.arbol.18 = cbind(dias18, predic18.arbol)
 ```{r}
 pred.arbol.18 = pred.arbol.18 %>% 
   rename("Unidades" = "predic18.arbol") %>% 
+  rename("Fecha" = "dias18") %>% 
+  mutate(Unidades = round(Unidades))
+```
+
+# Predicción con KNN
+
+```{r}
+# Predicción con KNN con KNN con preprocesamiento y k = 5
+pred.knn = predict(modelo.knn.grilla,
+                   newdata = yr18)
+pred.knn = as.data.frame(pred.knn)
+pred.knn = cbind(dias18, pred.knn)
+```
+
+```{r}
+pred.knn = pred.knn %>% 
+  rename("Unidades" = "pred.knn") %>% 
   rename("Fecha" = "dias18") %>% 
   mutate(Unidades = round(Unidades))
 ```
