@@ -200,7 +200,7 @@ Para poder identificar patrones estacionarios y otros asociados con el tiempo, s
 
 ## Días no laborales
 
-La mayoría de puntos del país donde es posible realizar un registro al RUNT solo operan en días laborales, es decir, entre el lunes y el sábado de cada semana, con la excepción de aquellos días que sean festivos, por lo que es importante identificar dichos días para que el modelo pueda incorporarlos y trabajar con ellos.
+La mayoría de puntos del país donde es posible realizar un registro al RUNT solo operan en días laborales, es decir, entre el lunes y el sábado de cada semana, con la excepción de aquellos días que sean festivos, por lo que es importante identificar dichos días para que el modelo pueda incorporarlos y trabajar con ellos. Nótese que es de utilidad tener en consideración los días festivos y los domingos simultáneamente en una sola variable, ya que tenerlas separadas podría implicar una redundancia.
 
 ```{r, include = FALSE}
 fest12 <- c("2012-01-01", "2012-01-09", "2012-03-19",
@@ -321,6 +321,147 @@ yr18 <- yr18 %>%
 
 ```{r}
 save(yr18, file = "yr18.RData")
+```
+
+# Generación de un modelo
+
+A continuación se van a implentar diferentes técnicas de aprendizaje automático para realizar regresiones que permitan predecir la cantidad de vehículos que van a ser registrados diariamente en el RUNT. En la mayoría de ellos se va a apelar al paquete $\color{purple}{\texttt{caret}}$ del software de programación especializado en estadística $\color{blue}{\textsf{R}}$, el cual permite de forma sencilla implementar los diferentes modelos y verificarlos usando *cross validation*, que, en particular, será aplicado empleando diez iteraciones.
+
+```{r}
+library(caret)
+```
+
+```{r}
+x = scale(db, center = TRUE, scale = TRUE)
+x = as.data.frame(x)
+```
+
+
+```{r}
+n = dim(x)[1]
+n.vl = round(n*0.25)
+set.seed(20220109)
+ind.vl = sample(1:n, n.vl, replace = FALSE)
+
+# Para las variables regresoras
+x.vl = x[ind.vl, -1]
+x.tr = x[-ind.vl, -1]
+
+# Para la variable de respuesta
+y.tr = x$Unidades[-ind.vl]
+y.vl = x$Unidades[ind.vl]
+```
+
+## Regresión lineal múltiple
+
+```{r}
+mod.reglin = lm(Unidades~.,
+                data = db,
+                subset = - ind.vl)
+```
+
+```{r}
+summary(mod.reglin)
+```
+
+Como se puede observar, el valor del $R^2$ que se obtiene para este modelo es de $R^2 = 0.5682$, y la versión ajustada es $R^2_{adj} = 0.5663$, los cuales son valores regulares que van a tratar de ser mejorados de cara al modelo que finalmente sea empleado. Sin embargo, debe tenerse en cuenta que la regres
+
+## K vecinos más cercanos
+
+Se va a emplear el método de los ***k vecinos más cercanos***, conocido como **KNN** por sus siglas en inglés (*k nearest neighbors*), y esto será realizado en dos etapas: la primera de ellas ignorando el preprocesamiento, es decir, usando los datos *puros* sin ninguna especie de modificación y luego preprocesándolos, lo cual implica que se los va a ajustar de acuerdo a sus medias y varianzas.
+
+### KNN. Sin preprocesamiento.
+
+```{r}
+control = trainControl(method = "cv",
+                       number = 10)
+```
+
+```{r}
+mod.knn = train(Unidades~.,
+                data = db,
+                method = "knn",
+                trControl = control)
+mod.knn
+```
+
+Y como se puede ver, para tres valores diferentes del número de vecinos a considerar, se obtienes valores de $R^2$ bastante bajos, lo cual impide que las variables regresoras consideradas sean útiles para explicar la variabilidad de la variable ***unidades***, que es la que quiere ser predicha para cada día del 2018, lo cual lleva a que este modelo sea descartado inmediatamente.
+
+### KNN. Empleando procesamiento.
+
+```{r}
+mod.knn.scale = train(Unidades~.,
+                data = db,
+                method = "knn",
+                preProcess = c("center", "scale"),
+                trControl = control)
+mod.knn.scale
+```
+
+Y se evidencia una notable mejoría que en el caso en el que el preprocesamiento no fue realizado, pues para cada una de las tres iteraciones evaluadas ($k = 5, \ 7, \ 9$), se obtuvieron valores de $R^2$ de al menos $0.80$, lo cual es bueno. Sin embargo, es interesante evaluar si es posible mejorar estos valores al ensayar aún más iteraciones, para lo cual se generará un grilla que posibilite evaluar valores de $k$ entre uno y cien.
+
+```{r}
+grilla.knn = expand.grid(k = seq(1, 101))
+
+modelo.knn.grilla = train(Unidades~.,
+                          data = db,
+                          method = "knn",
+                          preProcess = c("center", "scale"),
+                          tuneGrid = grilla.knn,
+                          trControl = control)
+modelo.knn.grilla
+```
+
+Y como se puede observar en la tabla anterior, los mejores valores para el número de vecinos a considerar, basados en el $R^2$ son $k = 4$ y $k = 5$, pues hay un empate con esta métrica. No obstante, al considerar las otras dos métricas: ***RMSE*** y ***MSE***, los cuales entre más bajos mejores son, se determina que el número óptimo de vecinos a considerar es **$k = 4$**. A continuación se observa un gráfico que permite visualizar el valor de la raíz del error cuádratico medio como función del número de vecinos empleado.
+
+```{r}
+plot(modelo.knn.grilla,
+     main = "Raíz del error cuadrático medio vs. número de vecinos",
+     xlab = "Número de vecinos (k)",
+     ylab = "Raíz del error cuadrático medio (RMSE)")
+```
+
+
+## Árboles de decisión
+
+```{r}
+mod.arbol = train(Unidades~.,
+                  data = db,
+                  method = "rpart2",
+                  trControl = control)
+mod.arbol
+```
+
+Ahora bien, al implementar árboles de decisión, se evidencia que el valor del $R^2$ varía notablemente según la profundidad máxima permitida, mejorando progresivamente al evaluar entre uno y tres (inclusive) nodos, alcanzando un pico $R^2 = 0.7317$ cuando se consideran tres nodos como máximo. No obstante, para poder tener una mejor panorámica del alcance de este modelo, se va a generar una grilla que permita evaluar más modelos con árboles de decisión para así escoger el número óptimo de profundidad máxima permitida.
+
+```{r}
+grilla.arbol = expand.grid(maxdepth = seq(1, 20))
+modelo.arbol.opt = train(Unidades~.,
+                         data = db,
+                         method = "rpart2",
+                         tuneGrid = grilla.arbol,
+                         trControl = control)
+modelo.arbol.opt
+```
+
+Y se observa que el mejor modelo es aquel que considera una profundida máxima de seis, puesto que su $R^2 = 0.8156$. Empero, este modelo no va a poder ser finalmente evaluado teniendo en cuenta que no es bueno para poder hacer predicciones fuera de su rango de generación, lo que quiere decir en este caso que sería bastante bueno para poder predecir cuál es la cantidad de vehículos registrados en el RUNT para días faltantes entre el 2012 y el 2017, pero no para evaluar más allá de estos años, lo que quiere decir que proyectar valores para el 2018 no va a ser útil con este método.
+
+# Modelo
+
+
+```{r}
+# Predicción con KNN con KNN con preprocesamiento y k = 5
+pred.knn = predict(modelo.knn.grilla,
+                   newdata = yr18)
+pred.knn = as.data.frame(pred.knn)
+pred.knn = cbind(dias18, pred.knn)
+```
+
+```{r}
+pred.knn = pred.knn %>% 
+  rename("Unidades" = "pred.knn") %>% 
+  rename("Fecha" = "dias18") %>% 
+  mutate(Unidades = round(Unidades))
 ```
 
 # Referencias
