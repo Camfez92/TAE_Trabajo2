@@ -76,13 +76,13 @@ control.optimizacion = trainControl(method = "LGGOCV", number = 10, p = 0.2)
 ```
 
 ```{r}
-mod.en = train(
-  Unidades~.,
-  data = db,
-  method = "glmnet",
-  trControl = control.optimizacion,
-  tuneGrid = hiperparametros
-)
+# mod.en = train(
+#   Unidades~.,
+#   data = db,
+#   method = "glmnet",
+#   trControl = control.optimizacion,
+#   tuneGrid = hiperparametros
+# )
 ```
 ***Error. Not a recognized resampling method.***
 
@@ -166,4 +166,104 @@ tss.svm = mean((y.test - mean(y.test))^2)
 rsqrt.svm = 1 - rss.svm/tss.svm
 rsqrt.svm
 ```
+## KNN
+
+```{r}
+control = trainControl(method = "cv",
+                       number = 10)
+```
+
+```{r}
+mod.knn = train(Unidades~.,
+                data = db,
+                method = "knn",
+                trControl = control)
+mod.knn
+```
+
+```{r}
+# Regresión
+
+mod.rl2 = train(Unidades~.,
+                data = db,
+                method = "lm",
+                trControl = control)
+mod.rl2
+```
+# KNN con preprocesamiento
+```{r}
+mod.knn.scale = train(Unidades~.,
+                data = db,
+                method = "knn",
+                preProcess = c("center", "scale"),
+                trControl = control)
+mod.knn.scale
+```
+
+# KNN con preprocesamiento y grid search para k
+
+```{r}
+grilla.knn = expand.grid(k = seq(1, 101, 4))
+```
+
+```{r}
+modelo.knn.grilla = train(Unidades~.,
+                          data = db,
+                          method = "knn",
+                          preProcess = c("center", "scale"),
+                          tuneGrid = grilla.knn,
+                          trControl = control)
+modelo.knn.grilla
+```
+
+## Árboles
+
+```{r}
+mod.arbol = train(Unidades~.,
+                  data = db,
+                  method = "rpart2",
+                  trControl = control)
+mod.arbol
+```
+
+```{r}
+grilla.arbol = expand.grid(maxdepth = seq(1, 20))
+modelo.arbol.opt = train(Unidades~.,
+                         data = db,
+                         method = "rpart2",
+                         tuneGrid = grilla.arbol,
+                         trControl = control)
+modelo.arbol.opt
+```
+```{r}
+plot(modelo.arbol.opt)
+```
+
+```{r}
+# Predicción con árboles de decisión
+load("yr18.RData")
+predic18.arbol = predict(modelo.arbol.opt,
+        newdata = yr18)
+predic18.arbol = as.data.frame(predic18.arbol)
+```
+
+```{r}
+dias18 = seq(as.Date("2018-01-01"), as.Date("2018-12-31"), by = "days")
+pred.arbol.18 = cbind(dias18, predic18.arbol)
+```
+
+```{r}
+pred.arbol.18 = pred.arbol.18 %>% 
+  rename("Unidades" = "predic18.arbol") %>% 
+  rename("Fecha" = "dias18") %>% 
+  mutate(Unidades = round(Unidades))
+```
+
+
+
+
+
+
+
+
 
