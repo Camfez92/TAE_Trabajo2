@@ -22,7 +22,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning = FALSE, message = FALSE}
 ##Carga de librerias
 library("readxl")
 library("DT")
@@ -32,28 +32,40 @@ library("plotly")
 library("summarytools")
 library("zoo")
 library("forcats")
+library(stargazer)
 ```
 
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, include = FALSE}
 #Carga de datos
 #La carga de los datos es mejor realizarla con la librería read_excel, si lo hacemos como lo hicimos en el trabajo pasado, genera errores o se cargan los datos mal (traté con varios encoding y todos generaban errores).
 
 db=read_excel("autos.xlsx")
 ```
 
-```{r}
+```{r, include = FALSE}
 save(db, file = "Autos.RData")
 ```
 
 
 # Análisis descriptivo
 
-La base de datos que se va a emplear para proyectar el número de vehículos a registrar en el **Registro Único Nacional de Tránsito**, ***RUNT*** contiene un registro del número de vehículos que han sido registrados diariamente entre el primero de enero de 2012 (2012-01-01) y el 31 de diciembre de 2017 (2017-12-31), lo que implica que parte con solo dos variables: la fecha y el número de vehículos registrados en el RUNT en cada fecha, con 2,192 observaciones que abarcan la totalidad de días que transcurrieron entre las dos fechas límite. Con esto claro, se desarrolla la siguiente serie de tiempo que ilustra el número de vehículos registrados por día.
+La base de datos que se va a emplear para proyectar el número de vehículos a registrar en el **Registro Único Nacional de Tránsito**, ***RUNT*** contiene un registro del número de vehículos que han sido registrados diariamente entre el primero de enero de 2012 (2012-01-01) y el 31 de diciembre de 2017 (2017-12-31), lo que implica que parte con solo dos variables: la fecha y el número de vehículos registrados en el RUNT en cada fecha, con 2,192 observaciones que abarcan la totalidad de días que transcurrieron entre las dos fechas límite. Así, vale la pena comenzar observando la estructura de la base de datos que va a ser empleada:
 
-```{r}
+```{r, include = FALSE}
 glimpse(db)
 ```
+
+| Característica | Tipo         | Primera observación | Segunda observación |
+|----------------|--------------|---------------------|---------------------|
+| Fecha          | Fecha (dttm) | 2012-01-01          | 2012-01-02          |
+| Unidades       | Doble (dbl)  | 0                   | 188                 |
+
+Y se puede observar que es una base de datos bastante simple, pues simplemente incluye las fechas y el respectivo número de vehículos que han sido registrados en el RUNT. Además, es bueno destacar que esta cuenta con dos columnas, una para cada una de las características recién discutidas, y 2,192 filas, una por cada observación, es decir, por cada día.
+
+Luego, vale la pena revisar el siguiente gráfico con el que se podrá observar la generalidad del número de vehículos registrados por día en el RUNT:
+
+
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
 g1 <- ggplot(db, aes(x = as.Date(Fecha), y = Unidades)) +
       geom_line(size = 0.1, color = "#4d85ea") +
@@ -66,10 +78,11 @@ g1 <- ggplot(db, aes(x = as.Date(Fecha), y = Unidades)) +
       theme_light()
 ggplotly(g1)
 ```
+
 De este gráfico se pueden destacar varias cosas. La primera de ellas es que la venta de vehículos presenta con bastante frecuencias días con cero registros nuevos, aspecto que se indagará más adelante. Asimismo, parece que las ventas medias se preservan en la mayor parte del año, con un pequeño pico al finalizar el primer trimestre y otro más destacado finalizando el año. Asimismo, se puede ver que el número de vehículos registrados en el RUNT parece tener un decenso a partir del año 2016, pues antes de este año es frecuente que se superasen los mil carros registrados por día, toda vez que a partir de este año esto pasa a ser menos frecuente. Así, considerando estos datos, se obtienen los siguientes resúmenes numéricos para el número de vehículos registrado por día:
 
 ```{r, include = FALSE}
-descr(db)
+stargazer(descr(db))
 ```
 
 | Parámetro                | Valor  |
@@ -101,7 +114,7 @@ ggplotly(g2)
 
 Como se aprecia, lo más frecuente es que en un día se inscriban en el RUNT entre cero y 124 vehpiculos aproximadamente, ya que esto sucedió en 422 de los 2,192 días que abarca el periodo de interés, seguido por entre 746 y 870 vehículos por día, pues en 239 días se registraron un número de vehículos incluido en tal intervalo. De la misma forma, destaca el hecho de que hay pocos días que tengan dos mil o más vehículos registrados por día.
 
-Ahora bien, con el objetivo de entender mejor la dinámica de venta de vehículos, vale la pena observar el comportamiento por mes, año, semana y día de la semana, para lo cual se van a crear tales variables auxiliares con ayuda de $\color{blue}{\textsf{R}}$, lo cual deja la estructura de la base de datos como sigue:
+Ahora bien, con el objetivo de entender mejor la dinámica del registro de vehículos en el RUNT, es útil observar el comportamiento por mes, año, semana y día de la semana, para lo cual se van a crear tales variables auxiliares con ayuda de $\color{blue}{\textsf{R}}$, lo cual deja la estructura de la base de datos como sigue:
 
 
 ```{r, echo=FALSE}
@@ -116,13 +129,23 @@ db <- db %>%
 # db$Fecha<-NULL
 ```
 
-```{r}
+```{r, include = FALSE}
 glimpse(db)
 ```
 
+| Característica   | Tipo         | Primera observación | Segunda observación |
+|------------------|--------------|---------------------|---------------------|
+| Fecha            | Fecha (dttm) | 2012-01-01          | 2012-01-02          |
+| Unidades         | Doble (dbl)  | 0                   | 188                 |
+| Día              | Entero (int) | 1                   | 2                   |
+| Mes              | Doble (dbl)  | 1                   | 1                   |
+| Año              | Doble (dbl)  | 2012                | 2012                |
+| Día de la semana | Doble (dbl)  | 1                   | 2                   |
+| Semana del año   | Doble (dbl)  | 1                   | 1                   |
+
 Y con esto, se va a revisar el comportamiento por mes entre el 2012 y el 2017 (inclusive) del registro de vehículos en el RUNT mediante la siguiente serie de tiempo:
 
-```{r}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 dbMesano <- db %>% 
   group_by(anno, mes) %>% 
   summarise(Unidades = sum(Unidades))
@@ -131,19 +154,17 @@ dbMesano <- db %>%
 dbMesano <- dbMesano %>%
   mutate("Mes" = paste(mes, anno, sep = "-")) %>% 
   mutate("Mes" = ifelse(nchar(Mes) < 7, paste0("0", Mes), Mes)) %>% 
-  mutate("Mes" = as.yearmon(Mes, format = "%m-%Y"))
+  mutate("Mes" = as.Date(Mes, format = "%m-%Y"))
 ```
 
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
-g3 <- ggplot(dbMesano, aes(x = Mes, y = Unidades)) +
-      geom_line(color = "#4d85ea") +
-      ggtitle("Número de vehículos registrados en el RUNT¹ por mes",
-              subtitle = "¹ Registro Único Nacional de Tránsito") +
-      xlab("Fecha [mmm - AAAA]") +
-      ylab("Vehículos registrados")
-      theme_light()
-ggplotly(g3)
+tseries <- ts(dbMesano$Unidades, start = c(2012,1), end = c(2017,12), frequency = 12)
+plot(tseries,
+     main = "Número de vehículos registrados por mes",
+     xlab = "Mes",
+     ylab = "Núm. de vehíc. registrados")
 ```
+
 Y como se puede observar, no se puede hablar de que haya una cantidad semejante de vehículos vendidos por mes, ya que en cada año se puede observar que hay una tendencia a la baja al iniciar en el año, pues en cada uno de los meses de enero hay un mínimo de vehículos registrados en el RUNT para sus respectivos años, ocurriendo luego un incremento hacia los meses de marzo, abril y mayo para mantenerse en niveles semejantes hasta que se presenta un máximo en el mes de diciembre, siendo el más destacado el del año 2014, ya que en dicho diciembre se registraron 40,518 vehículos. Así mismo, se evidencia nuevamente una tendencia bajista en el comportamiento global, ya que hay un menor número de registros hacia los años 2018 y 2017 comparado con los demás, siendo 2014 el año con mejores registros, como se verá más adelante. Ahora, se va a analizar el número de vehículos registrados por mes sin importar el año.
 
 ```{r}
@@ -275,6 +296,16 @@ db <- db %>%
   select(-c("Festivo", "Fecha"))
 ```
 
+## Tabla final
+
+Realizado lo anterior, se tiene que la tabla de datos que finalmente será considerada para poder estudiar los diferentes modelos predictivos que permitan dar con una adecuada proyección del número de vehículos registrados en el RUNT para todo el 2018 es la que se ve enseguida:
+
+```{r}
+datatable(db,
+          colnames = c("Observ.", "Vehículos registrados", "Día", "Mes", "Año",
+                       "Día de la semana", "Semana del año", "TRM ($COP)",
+                       "Día laborable"))
+```
 
 ```{r}
 save(db, file = "RUNT.RData")
@@ -282,9 +313,12 @@ save(db, file = "RUNT.RData")
 
 # Generación de la base de datos de 2018
 
+Para poder emplear el modelo con las variables requeridas del año, se va a generar una base de datos con ayuda de $\color{blue}{\textsf{R}}$ que permita determinar los valores de las variables regresoras para cada uno de los 365 días de este año. El resultado observado puede ser visto a continuación:
+
 ```{r}
 dias18 = seq(as.Date("2018-01-01"), as.Date("2018-12-31"), by="days")
 ```
+
 
 ```{r}
 yr18 = as.data.frame(dias18)
@@ -336,11 +370,18 @@ yr18 <- yr18 %>%
 save(yr18, file = "yr18.RData")
 ```
 
+```{r}
+datatable(yr18,
+          colnames = c("Observ.", "Día", "Mes", "Año", "Día de la semana",
+                       "Semana del año", "TRM ($COP)", "Día laborable"))
+```
+Un archivo en formato *.RData* puede ser encontrado en el repositario de Git-Hub de este trabajo bajo el nombre ***yr2018.RData***.
+
 # Generación de un modelo
 
 A continuación se van a implentar diferentes técnicas de aprendizaje automático para realizar regresiones que permitan predecir la cantidad de vehículos que van a ser registrados diariamente en el RUNT. En la mayoría de ellos se va a apelar al paquete $\color{purple}{\texttt{caret}}$ del software de programación especializado en estadística $\color{blue}{\textsf{R}}$, el cual permite de forma sencilla implementar los diferentes modelos y verificarlos usando *cross validation*, que, en particular, será aplicado empleando diez iteraciones.
 
-```{r}
+```{r, warning = FALSE, message = "FALSE"}
 library(caret)
 ```
 
@@ -367,14 +408,20 @@ y.vl = x$Unidades[ind.vl]
 
 ## Regresión lineal múltiple
 
+Se va a comenzar analizando un modelo de regresión lineal múltiple, para el cual se obtiene el siguiente resumen:
+
 ```{r}
 mod.reglin = lm(Unidades~.,
                 data = db,
                 subset = - ind.vl)
 ```
 
+```{r, include = FALSE, message=FALSE, warning=FALSE}
+library(sjPlot)
+```
+
 ```{r}
-summary(mod.reglin)
+tab_model(mod.reglin)
 ```
 
 Como se puede observar, el valor del $R^2$ que se obtiene para este modelo es de $R^2 = 0.5682$, y la versión ajustada es $R^2_{adj} = 0.5663$, los cuales son valores regulares que van a tratar de ser mejorados de cara al modelo que finalmente sea empleado. Sin embargo, debe tenerse en cuenta que la regres
@@ -385,22 +432,31 @@ Se va a emplear el método de los ***k vecinos más cercanos***, conocido como *
 
 ### KNN. Sin preprocesamiento.
 
+Un resumen de los resultados de este modelo empleando $k = 5, 7, 9$ vecinos es el que se observa en la siguiente tabla:
+
 ```{r}
 control = trainControl(method = "cv",
                        number = 10)
 ```
 
-```{r}
+```{r, include = FALSE}
 mod.knn = train(Unidades~.,
                 data = db,
                 method = "knn",
                 trControl = control)
-mod.knn
 ```
+
+| Núm. vecinos (k) | RMSE     | $R^2$   | MAE      |
+|------------------|----------|---------|----------|
+| 5                | 551.4903 | 0.06591 | 44.2648  |
+| 7                | 552.5287 | 0.0545  | 451.6000 |
+| 9                | 54.2284  | 0.0522  | 451.3888 |
 
 Y como se puede ver, para tres valores diferentes del número de vecinos a considerar, se obtienes valores de $R^2$ bastante bajos, lo cual impide que las variables regresoras consideradas sean útiles para explicar la variabilidad de la variable ***unidades***, que es la que quiere ser predicha para cada día del 2018, lo cual lleva a que este modelo sea descartado inmediatamente.
 
 ### KNN. Empleando procesamiento.
+
+Al realizar un preprocesamiento, el cual implica estandarizar los datos de acuerdo a sus medias y sus varianzas, se obtienen los siguientes resultados para $k = 5, 7, 9$.
 
 ```{r}
 mod.knn.scale = train(Unidades~.,
@@ -408,8 +464,13 @@ mod.knn.scale = train(Unidades~.,
                 method = "knn",
                 preProcess = c("center", "scale"),
                 trControl = control)
-mod.knn.scale
 ```
+
+| Núm. vecinos (k) | RMSE     | $R^2$  | MAE      |
+|------------------|----------|--------|----------|
+| 5                | 237.9352 | 0.8176 | 151.4622 |
+| 7                | 244.9491 | 0.8068 | 157.2997 |
+| 9                | 249.8848 | 0.7999 | 161.5048 |
 
 Y se evidencia una notable mejoría que en el caso en el que el preprocesamiento no fue realizado, pues para cada una de las tres iteraciones evaluadas ($k = 5, \ 7, \ 9$), se obtuvieron valores de $R^2$ de al menos $0.80$, lo cual es bueno. Sin embargo, es interesante evaluar si es posible mejorar estos valores al ensayar aún más iteraciones, para lo cual se generará un grilla que posibilite evaluar valores de $k$ entre uno y cien.
 
@@ -422,8 +483,10 @@ modelo.knn.grilla = train(Unidades~.,
                           preProcess = c("center", "scale"),
                           tuneGrid = grilla.knn,
                           trControl = control)
-modelo.knn.grilla
+datatable(round(as.data.frame(modelo.knn.grilla[4])[, c(1:4)], 4),
+          colnames = c("No.", "Número de vecinos (k)", "RMSE", "R cuadrado", "MSE"))
 ```
+
 
 Y como se puede observar en la tabla anterior, los mejores valores para el número de vecinos a considerar, basados en el $R^2$ son $k = 4$ y $k = 5$, pues hay un empate con esta métrica. No obstante, al considerar las otras dos métricas: ***RMSE*** y ***MSE***, los cuales entre más bajos mejores son, se determina que el número óptimo de vecinos a considerar es **$k = 4$**. A continuación se observa un gráfico que permite visualizar el valor de la raíz del error cuádratico medio como función del número de vecinos empleado.
 
@@ -433,31 +496,6 @@ plot(modelo.knn.grilla,
      xlab = "Número de vecinos (k)",
      ylab = "Raíz del error cuadrático medio (RMSE)")
 ```
-
-
-## Árboles de decisión
-
-```{r}
-mod.arbol = train(Unidades~.,
-                  data = db,
-                  method = "rpart2",
-                  trControl = control)
-mod.arbol
-```
-
-Ahora bien, al implementar árboles de decisión, se evidencia que el valor del $R^2$ varía notablemente según la nivel máximo permitida, mejorando progresivamente al evaluar entre uno y tres (inclusive) nodos, alcanzando un pico $R^2 = 0.7317$ cuando se consideran tres nodos como máximo. No obstante, para poder tener una mejor panorámica del alcance de este modelo, se va a generar una grilla que permita evaluar más modelos con árboles de decisión para así escoger el número óptimo de nivel máximo permitida.
-
-```{r}
-grilla.arbol = expand.grid(maxdepth = seq(1, 20))
-modelo.arbol.opt = train(Unidades~.,
-                         data = db,
-                         method = "rpart2",
-                         tuneGrid = grilla.arbol,
-                         trControl = control)
-modelo.arbol.opt
-```
-
-Y se observa que el mejor modelo es aquel que considera una profundida máxima de seis, puesto que su $R^2 = 0.8156$. Empero, este modelo no va a poder ser finalmente evaluado teniendo en cuenta que no es bueno para poder hacer predicciones fuera de su rango de generación, lo que quiere decir en este caso que sería bastante bueno para poder predecir cuál es la cantidad de vehículos registrados en el RUNT para días faltantes entre el 2012 y el 2017, pero no para evaluar más allá de estos años, lo que quiere decir que proyectar valores para el 2018 no va a ser útil con este método.
 
 # Modelo
 
