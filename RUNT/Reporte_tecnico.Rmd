@@ -647,6 +647,14 @@ write.csv(pred.knn, "prediccion_2018.csv")
 
 # Referencias
 
-[1] PROCOLOMBIA. "Industria automotriz en Colombia". Procolombia. https://www.colombiatrade.com.co/noticias/industria-automotriz-en-colombia (accedido el 8 de enero de 2022).
+- [1] PROCOLOMBIA. "Industria automotriz en Colombia". Procolombia. https://www.colombiatrade.com.co/noticias/industria-automotriz-en-colombia (accedido el 8 de enero de 2022).
 
-[2] Banco de la República de Colombia. "Tasa representativa del mercado (TRM - peso por dólar)". Banco de la República. https://www.banrep.gov.co/es/estadisticas/trm (accedido el 8 de enero de 2022).
+- [2] Banco de la República de Colombia. "Tasa representativa del mercado (TRM - peso por dólar)". Banco de la República. https://www.banrep.gov.co/es/estadisticas/trm (accedido el 8 de enero de 2022).
+
+- [3] Ridge, Lasso and Elastic-Net Regression in R. https://www.youtube.com/watch?v=ctmNq7FgbvI
+
+- [4] Ander J. Cómo programar una red neuronal desde 0 en Python. https://anderfernandez.com/blog/como-programar-una-red-neuronal-desde-0-en-python/#:~:text=Programando%20una%20red%20neuronal%20en,cada%20una%20de%20las%20capas.
+
+- [5] Joaquín A. (2017, abril). Máquinas de Vector Soporte (Support Vector Machines, SVMs). https://www.cienciadedatos.net/documentos/34_maquinas_de_vector_soporte_support_vector_machines
+
+- [6] Ander J. Programar algoritmo kNN desde cero en R https://anderfernandez.com/blog/programar-knn-r/#:~:text=As%C3%AD%20pues%2C%20la%20clave%20del,los%20que%20se%20debe%20observar.
