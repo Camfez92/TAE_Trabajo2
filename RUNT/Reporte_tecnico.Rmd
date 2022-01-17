@@ -1,6 +1,6 @@
 ---
-title: "Transformaciones finales de la base de datos"
-author: "Equipo de TAE"
+title: "CANTIDAD DE VEHÍCULOS REGISTRADOS EN EL RUNT PERIODO 2012-2018"
+author: "Equipo 7"
 date: "Enero 17 de 2022"
 output:
   html_document:
@@ -71,7 +71,7 @@ g1 <- ggplot(db, aes(x = as.Date(Fecha), y = Unidades)) +
       geom_line(size = 0.1, color = "#4d85ea") +
       ggtitle("Número de vehículos registrados en el RUNT¹ por día",
               subtitle = "¹ Registro Único Nacional de Tránsito") +
-      xlab("Fecha [AAAA-MM-DD]") +
+      xlab("Fecha [AAAA-MM-DD]\n Figura 1:Número de vehículos registrados en el RUNT¹ por día ") +
       ylab("Vehículos registrados") +
       scale_x_date(date_labels = "%b'%y",
                    date_minor_breaks = "3 month") +
@@ -79,7 +79,7 @@ g1 <- ggplot(db, aes(x = as.Date(Fecha), y = Unidades)) +
 ggplotly(g1)
 ```
 
-De este gráfico se pueden destacar varias cosas. La primera de ellas es que la venta de vehículos presenta con bastante frecuencias días con cero registros nuevos, aspecto que se indagará más adelante. Asimismo, parece que las ventas medias se preservan en la mayor parte del año, con un pequeño pico al finalizar el primer trimestre y otro más destacado finalizando el año. Asimismo, se puede ver que el número de vehículos registrados en el RUNT parece tener un decenso a partir del año 2016, pues antes de este año es frecuente que se superasen los mil carros registrados por día, toda vez que a partir de este año esto pasa a ser menos frecuente. Así, considerando estos datos, se obtienen los siguientes resúmenes numéricos para el número de vehículos registrado por día:
+De la figura 1 se pueden destacar varias cosas. La primera de ellas es que la venta de vehículos presenta con bastante frecuencias días con cero registros nuevos, aspecto que se indagará más adelante. Asimismo, parece que las ventas medias se preservan en la mayor parte del año, con un pequeño pico al finalizar el primer trimestre y otro más destacado finalizando el año. Asimismo, se puede ver que el número de vehículos registrados en el RUNT parece tener un decenso a partir del año 2016, pues antes de este año es frecuente que se superasen los mil carros registrados por día, toda vez que a partir de este año esto pasa a ser menos frecuente. Así, considerando estos datos, se obtienen los siguientes resúmenes numéricos para el número de vehículos registrado por día:
 
 ```{r, include = FALSE}
 stargazer(descr(db))
@@ -107,12 +107,12 @@ g2 <- ggplot(db, aes(x = Unidades)) +
       theme_light() +
       ggtitle("Frecuencia del número de vehículos registrados en el RUNT¹ por día",
               subtitle = "¹ Registro Único Nacional de Tránsito") +
-      xlab("Número de vehículos registrados por día") +
+      xlab("Número de vehículos registrados por día \n Figura 2: Frecuencia de vehículos registrados en el RUNT¹ por día") +
       ylab("Frecuencia absoluta")
 ggplotly(g2)
 ```
 
-Como se aprecia, lo más frecuente es que en un día se inscriban en el RUNT entre cero y 124 vehpiculos aproximadamente, ya que esto sucedió en 422 de los 2,192 días que abarca el periodo de interés, seguido por entre 746 y 870 vehículos por día, pues en 239 días se registraron un número de vehículos incluido en tal intervalo. De la misma forma, destaca el hecho de que hay pocos días que tengan dos mil o más vehículos registrados por día.
+Como se aprecia en la figura 2, lo más frecuente es que en un día se inscriban en el RUNT entre cero y 124 vehpiculos aproximadamente, ya que esto sucedió en 422 de los 2,192 días que abarca el periodo de interés, seguido por entre 746 y 870 vehículos por día, pues en 239 días se registraron un número de vehículos incluido en tal intervalo. De la misma forma, destaca el hecho de que hay pocos días que tengan dos mil o más vehículos registrados por día.
 
 Ahora bien, con el objetivo de entender mejor la dinámica del registro de vehículos en el RUNT, es útil observar el comportamiento por mes, año, semana y día de la semana, para lo cual se van a crear tales variables auxiliares con ayuda de $\color{blue}{\textsf{R}}$, lo cual deja la estructura de la base de datos como sigue:
 
@@ -161,11 +161,11 @@ dbMesano <- dbMesano %>%
 tseries <- ts(dbMesano$Unidades, start = c(2012,1), end = c(2017,12), frequency = 12)
 plot(tseries,
      main = "Número de vehículos registrados por mes",
-     xlab = "Mes",
+     xlab = "Mes \n Figura 3: Número de vehículos registrados mensualmente",
      ylab = "Núm. de vehíc. registrados")
 ```
 
-Y como se puede observar, no se puede hablar de que haya una cantidad semejante de vehículos vendidos por mes, ya que en cada año se puede observar que hay una tendencia a la baja al iniciar en el año, pues en cada uno de los meses de enero hay un mínimo de vehículos registrados en el RUNT para sus respectivos años, ocurriendo luego un incremento hacia los meses de marzo, abril y mayo para mantenerse en niveles semejantes hasta que se presenta un máximo en el mes de diciembre, siendo el más destacado el del año 2014, ya que en dicho diciembre se registraron 40,518 vehículos. Así mismo, se evidencia nuevamente una tendencia bajista en el comportamiento global, ya que hay un menor número de registros hacia los años 2018 y 2017 comparado con los demás, siendo 2014 el año con mejores registros, como se verá más adelante. Ahora, se va a analizar el número de vehículos registrados por mes sin importar el año.
+Y como se puede observar en la figura 3, no se puede hablar de que haya una cantidad semejante de vehículos vendidos por mes, ya que en cada año se evidencia que hay una tendencia a la baja al iniciar el año, pues en cada uno de los meses de enero hay un mínimo de vehículos registrados en el RUNT para sus respectivos años, ocurriendo luego un incremento hacia los meses de marzo, abril y mayo para mantenerse en niveles semejantes hasta que se presenta un máximo en el mes de diciembre, siendo el más destacado el del año 2014, ya que en dicho diciembre se registraron 40,518 vehículos. Así mismo, se evidencia nuevamente una tendencia bajista en el comportamiento global, ya que hay un menor número de registros hacia los años 2018 y 2017 comparado con los demás, siendo 2014 el año con mejores registros, como se verá más adelante. Ahora, se va a analizar el número de vehículos registrados por mes sin importar el año.
 
 ```{r}
 dbMes <- dbMesano %>% 
@@ -186,14 +186,25 @@ dbMes$mes <- NULL
 g4 <- ggplot(dbMes, aes(x = (mesab), y = (Unidades))) +
       geom_bar(stat = "identity", fill = "#4d85ea") +
       theme_light() + 
-      ggtitle("Número de vehículos registrados en el RUNT por mes") +
-      xlab("Mes") +
+      ggtitle("Promedio mensual de vehículos registrados en el RUNT") +
+      xlab("Mes \n Figura 4: Promedio mensual de vehículos registrados en el RUNT") +
       ylab("Vehículos registrados") +
    scale_x_discrete(guide = guide_axis(angle = 30))
 g4
 ```
 
-Y se observa algo que fue confirmado previamente y es que diciembre es el mes con más registros diarios en el RUNT, toda vez que enero es el que menos. Asimismo, se observa que en el resto de meses se estabiliza aproximadamente el registro con al menos de 15,000 registros por mes, siendo febrero y una excepción probablemente por una recuperación luego del mínimo de enero.
+En la figura 4 se observa algo que fue confirmado previamente y es que diciembre es el mes con más registros diarios en el RUNT, toda vez que enero es el que menos. Asimismo, se observa que en el resto de meses se estabiliza aproximadamente el registro con al menos de 15,000 registros por mes, siendo febrero y una excepción probablemente por una recuperación luego del mínimo de enero.
+
+```{r, echo=FALSE, warning = FALSE, message = FALSE}
+boxplot(tseries~cycle(tseries),names=month.abb,tseries,
+     main = "Número de vehículos registrados por mes",
+     xlab = "Mes \n Figura 5: Boxplot vehículos registrados en el RUNT mensualmente",
+     ylab = "Núm. de vehíc. registrados")
+
+```
+
+En la gráfica de boxplot anterior (Figura 5), se observa que la media de la serie no es constante en los diferentes periodos del año, siendo el promedio menor en el mes de enero que en cualquiera de los demás meses. Es decir, la media sí depende del periodo del año, lo que confirma la existencia de un patrón estacional que se repite de forma constante o aproximadamente constante año tras año.
+
 
 # Creación de más variables
 
@@ -493,7 +504,7 @@ Y como se puede observar en la tabla anterior, los mejores valores para el núme
 ```{r}
 plot(modelo.knn.grilla,
      main = "Raíz del error cuadrático medio vs. número de vecinos",
-     xlab = "Número de vecinos (k)",
+     xlab = "Número de vecinos (k) \n: Figura 6: K óptimo por grafica de codo",
      ylab = "Raíz del error cuadrático medio (RMSE)")
 ```
 
@@ -515,7 +526,7 @@ plot <- ggplot(data = resultado_plot,
          color = curva)) +
     geom_line() +
     ggtitle("Datos observados vs predichos entre 2012 y 2017 con KNN") +
-    labs(y = "Vehículos registrados", x = "Fecha") + 
+    labs(y = "Vehículos registrados", x = "Fecha \n Figura 7: Datos observados vs predichos entre 2012 y 2017 con KNN") + 
     theme(plot.title = element_text(hjust = 0.5)) +
     labs(color = "Curva") + 
     scale_color_manual(values=c("Red", "Blue"))
@@ -538,7 +549,7 @@ plot <- ggplot(data = resultado_plot,
          color = curva)) +
     geom_line() +
     ggtitle("Datos observados vs predichos entre 2012 y 2017 con red neuronal") +
-    labs(y = "Vehículos registrados", x = "Fecha") + 
+    labs(y = "Vehículos registrados", x = "Fecha \n Figura 8: Datos observados vs predichos entre 2012 y 2017 con red neuronal") + 
     theme(plot.title = element_text(hjust = 0.5)) +
     labs(color = "Curva") + 
     scale_color_manual(values=c("Red", "Blue"))
