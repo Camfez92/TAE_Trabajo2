@@ -39,6 +39,7 @@ library("summarytools")
 library("zoo")
 library("forcats")
 library(stargazer)
+library(olsrr)
 ```
 
 
@@ -55,8 +56,13 @@ save(db, file = "Autos.RData")
 
 # Introducción
 
-El RUNT significa Registro Único Nacional de Tránsito, que es un sistema de información que permite registrar y mantener actualizada, centralizada, autorizada y validada la misma sobre los registros de automotores, conductores, licencias de tránsito, empresas de transporte público, infractores, accidentes de tránsito, seguros, remolques y semirremolques, maquinaría agrícola y de construcción autopropulsada y de personas naturales o jurídicas que prestan servicio al sector. (art. 8 y 9 de la Ley 769 de 2002 y la parte pertinente de la Ley 1005 de 2006)
- El modelo de operación del Registro Único Nacional de Tránsito RUNT gira alrededor de un sistema centralizado de información de tránsito y transporte el cual opera bajo un esquema de colaboración que depende de la información provista, en línea y en tiempo real, por múltiples entidades, incluidos el Ministerio de Transporte, las Direcciones Territoriales y los Organismos de Tránsito de todo el país.
+El RUNT significa *Registro Único Nacional de Tránsito*, que es un sistema de información que permite registrar y mantener actualizada, centralizada, autorizada y validada la misma sobre los registros de automotores, conductores, licencias de tránsito, empresas de transporte público, infractores, accidentes de tránsito, seguros, remolques y semirremolques, maquinaria agrícola y de construcción autopropulsada y de personas naturales o jurídicas que prestan servicio al sector. (artículos ocho y nueve de la ley 769 de 2002 y la parte pertinente de la ley 1005 de 2006).
+
+El modelo de operación del Registro Único Nacional de Tránsito RUNT gira alrededor de un sistema centralizado de información de tránsito y transporte el cual opera bajo un esquema de colaboración que depende de la información provista, en línea y en tiempo real, por múltiples entidades, incluidos el Ministerio de Transporte, las Direcciones Territoriales y los Organismos de Tránsito de todo el país.
+
+Este trabajo abordará el problema de generar un modelo predictivo que permita proyectar la cantidad de vehículos registrados por día en el RUNT durante el 2018.
+
+- ***Observación.*** Para ingresar al repositorio de Git-Hub con el cual se desarrolló este trabajo, basta con hacer clic [aquí](https://github.com/Camfez92/TAE_Trabajo2) (si el enlace no funciona, lo puede copiar y pegar: https://github.com/Camfez92/TAE_Trabajo2)
 
 # Objetivo
 
@@ -493,7 +499,6 @@ tab_model(mod.reglin)
 Como se puede observar, el valor del $R^2$ que se obtiene para este modelo es de $R^2 = 0.5682$, y la versión ajustada es $R^2_{adj} = 0.5663$, los cuales son valores regulares que van a tratar de ser mejorados de cara al modelo que finalmente sea empleado. Sin embargo, es interesante observar qué sucede con todos los modelos de regresión posible, que son 127 en total, para lo cual se desarrolla la siguiente tabla:
 
 ```{r}
-library(olsrr)
 k=ols_step_all_possible(mod.reglin)
 k = as.data.frame(k[, c(1:6)])
 k2 = round(k[, c(1, 2, 4, 5)], 4)
