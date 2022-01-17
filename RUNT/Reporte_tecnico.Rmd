@@ -53,6 +53,38 @@ db=read_excel("autos.xlsx")
 save(db, file = "Autos.RData")
 ```
 
+# Introducción
+
+Bla, bla, bla
+
+# Objetivos
+
+## Objetivo general
+
+Bla, bla, bla
+
+## Objetivos específicos
+
+- Bla, bla, bla
+- Bla, bla, bla
+- Bla, bla, bla
+
+# Herramientas y materiales
+
+## Materiales principales
+
+Para la realización de este informe técnico, así como el planteamiento de la mayoría de los modelos predictivos que se presentarán más adelante se empló la versión 4.0.5 de $\color{#00008b}{\textsf{R}}$, el cual es un software de programación especializado en estadística y ciencia de datos. Además, para la escritura del código de este lenguaje se empleó la versión 2021.09.1 del enterno de desarrollo integrado $\color{#1ac5ff}{\textsf{R}}$$\color{#696969}{\textsf{Studio}}$. Además, para el desarrollo de uno de los modelos se usó $\color{cyan}{\textsf{Python}}$, uno de los lenguajes de programación más empleados en la actualidad y con una gran acogida por parte de los desarrolladores.
+
+## Materiales secundarios
+
+Vale la pena mencionar los paquetes de $\color{#00008b}{\textsf{R}}$ que más se emplearon en el marco de este trabajo para conseguir el desarrollo del modelo predictivo del número de vehículos registrados en el RUNT en el 2018:
+
+* $\color{purple}{\texttt{caret}}$. **Versión 6.0-90** de octubre de 2021. Este [paquete](https://cran.r-project.org/web/packages/caret/caret.pdf) resalta como el más importante de todos, puesto que con él fue posible desarrollar algunos de los modelos que se presentarán más adelante. Este paquete es útil para la creación de modelos de clasificación y regresión, así como para la generación de gráficos que permitan estudiar los resultados que se obtienen con sus funciones. Este un paquete desarrollado por el ***R Core Team*** (el equipo base que ayuda a desarrollar y mantener al lenguaje R), **Max Kuhn, Jed Wing, Steve Weston, Andre Williams, Chris Keefer, Allan Engelhardt, Tony Cooper** y **Breton Kenkel**, entre otros.
+
+* $\color{purple}{\texttt{DT}}$. **Versión 0.20** Este [paquete](https://cran.r-project.org/web/packages/DT/index.html) permite formatear tablas creadas con código de $\color{#00008b}{\textsf{R}}$ para luego ser presentadas con un estilo sobrio, elegante y sencillo, de forma que los lectores puedan entender amigablemente las tablas presentadas.
+
+* $\color{purple}{\texttt{tidyverse}}$. **Versión 1.3.1.** Este es un [paquete](https://www.tidyverse.org/packages/) desarrollado por **Hadley Wickham** que incluye otros paquetes como $\texttt{dplyr}$ y $\texttt{ggplot2}$, que fueron usados con frecuencia en este trabajo y que facilitan el manejo, análisis, transformación de bases de datos, así como la creación de gráficos elegantes y llamativos.
+
 
 # Análisis descriptivo
 
