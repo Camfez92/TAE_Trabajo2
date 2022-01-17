@@ -55,19 +55,14 @@ save(db, file = "Autos.RData")
 
 # Introducción
 
-Bla, bla, bla
+El RUNT significa Registro Único Nacional de Tránsito, que es un sistema de información que permite registrar y mantener actualizada, centralizada, autorizada y validada la misma sobre los registros de automotores, conductores, licencias de tránsito, empresas de transporte público, infractores, accidentes de tránsito, seguros, remolques y semirremolques, maquinaría agrícola y de construcción autopropulsada y de personas naturales o jurídicas que prestan servicio al sector. (art. 8 y 9 de la Ley 769 de 2002 y la parte pertinente de la Ley 1005 de 2006)
+ El modelo de operación del Registro Único Nacional de Tránsito RUNT gira alrededor de un sistema centralizado de información de tránsito y transporte el cual opera bajo un esquema de colaboración que depende de la información provista, en línea y en tiempo real, por múltiples entidades, incluidos el Ministerio de Transporte, las Direcciones Territoriales y los Organismos de Tránsito de todo el país.
 
 # Objetivos
 
 ## Objetivo general
 
-Bla, bla, bla
-
-## Objetivos específicos
-
-- Bla, bla, bla
-- Bla, bla, bla
-- Bla, bla, bla
+En el siguiente proyecto se aborda el problema de crear un modelo para predecir el número de vehículos registrados diariamente en el RUNT. Los datos es una serie temporal del número de vehículos registrados diariamente durante los años 2012 a 2017. Para el análisis y modelamiento se incluyeron algunas variables que consideramos relevantes.
 
 # Herramientas y materiales
 
