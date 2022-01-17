@@ -712,7 +712,7 @@ datatable(totalidad,
           colnames = c("Observación", "Día [AAAA-MM-DD]", "Unidades registradas [vehículos]"))
 ```
 
-## CONCLUSIONES
+# Conclusiones
 
 - Los datos presentan un patron estacional, es decir, un patrón que se repite anualmente, siendo enero el mes en el que hay menos cantidad de vehículos registrados y diciembre el mes en que más se registran.
 
