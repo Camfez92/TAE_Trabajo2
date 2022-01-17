@@ -58,9 +58,7 @@ save(db, file = "Autos.RData")
 El RUNT significa Registro Único Nacional de Tránsito, que es un sistema de información que permite registrar y mantener actualizada, centralizada, autorizada y validada la misma sobre los registros de automotores, conductores, licencias de tránsito, empresas de transporte público, infractores, accidentes de tránsito, seguros, remolques y semirremolques, maquinaría agrícola y de construcción autopropulsada y de personas naturales o jurídicas que prestan servicio al sector. (art. 8 y 9 de la Ley 769 de 2002 y la parte pertinente de la Ley 1005 de 2006)
  El modelo de operación del Registro Único Nacional de Tránsito RUNT gira alrededor de un sistema centralizado de información de tránsito y transporte el cual opera bajo un esquema de colaboración que depende de la información provista, en línea y en tiempo real, por múltiples entidades, incluidos el Ministerio de Transporte, las Direcciones Territoriales y los Organismos de Tránsito de todo el país.
 
-# Objetivos
-
-## Objetivo general
+# Objetivo
 
 En el siguiente proyecto se aborda el problema de crear un modelo para predecir el número de vehículos registrados diariamente en el RUNT. Los datos es una serie temporal del número de vehículos registrados diariamente durante los años 2012 a 2017. Para el análisis y modelamiento se incluyeron algunas variables que consideramos relevantes.
 
@@ -238,7 +236,7 @@ g4 <- ggplot(dbMes, aes(x = (mesab), y = (Unidades))) +
 g4
 ```
 
-En la figura 4 se observa algo que fue confirmado previamente y es que diciembre es el mes con más registros diarios en el RUNT, toda vez que enero es el que menos. Asimismo, se observa que en el resto de meses se estabiliza aproximadamente el registro con al menos de 15,000 registros por mes, siendo febrero y una excepción probablemente por una recuperación luego del mínimo de enero.
+En la figura 4 se observa algo que fue confirmado previamente y es que diciembre es el mes con más registros diarios en el RUNT, toda vez que enero es el que menos. Asimismo, se observa que en el resto de meses se estabiliza aproximadamente el registro con al menos de 15,000 registros por mes, siendo febrero y una excepción probablemente por una recuperación luego del mínimo de enero. Además, con ayuda de estos boxplots se puede afirmar que existe evidencia de que los registros de vehículos en el mes de diciembre son mayores que en el resto de meses del año, lo cual se evidencia porque la caja asociada a este mes se ubica por encima de las cajas del resto de meses. Asimismo, se tiene evidencia de que el registro diario de vehículos en el RUNT durante el mes de enero es menor que en los meses de marzo, junio, agosto, septiembre, noviembre y diciembre, lo cual se corresponde con las tendencias descritas previamente.
 
 ```{r, echo=FALSE, warning = FALSE, message = FALSE, out.width="110%"}
 boxplot(tseries~cycle(tseries),names=month.abb,tseries,
@@ -492,7 +490,18 @@ Tabla 6: Ajuste regresión lineal múltiple.
 tab_model(mod.reglin)
 ```
 
-Como se puede observar, el valor del $R^2$ que se obtiene para este modelo es de $R^2 = 0.5682$, y la versión ajustada es $R^2_{adj} = 0.5663$, los cuales son valores regulares que van a tratar de ser mejorados de cara al modelo que finalmente sea empleado. Sin embargo, debe tenerse en cuenta que la regres
+Como se puede observar, el valor del $R^2$ que se obtiene para este modelo es de $R^2 = 0.5682$, y la versión ajustada es $R^2_{adj} = 0.5663$, los cuales son valores regulares que van a tratar de ser mejorados de cara al modelo que finalmente sea empleado. Sin embargo, es interesante observar qué sucede con todos los modelos de regresión posible, que son 127 en total, para lo cual se desarrolla la siguiente tabla:
+
+```{r}
+library(olsrr)
+k=ols_step_all_possible(mod.reglin)
+k = as.data.frame(k[, c(1:6)])
+k2 = round(k[, c(1, 2, 4, 5)], 4)
+k3 = cbind(k[, 3], k2)
+datatable(k3,
+          colnames = c("Variables regresoras", "Regresión No.", "Número de variables", "R cuadrado", "R cuadr. ajust."))
+```
+Y se puede observar que el mejor modelo ajustado es justamente el que tiene en consideración a todas las variables empleadas.
 
 ## K vecinos más cercanos
 
@@ -711,6 +720,20 @@ Tabla 10: Vehículos registrados entre el 2012 y el 2018 en el RUNT.
 datatable(totalidad,
           colnames = c("Observación", "Día [AAAA-MM-DD]", "Unidades registradas [vehículos]"))
 ```
+
+<!-- Finalmente, se muestra los boxplots de la figura XXXX, los cuales muestran el número de autos vendidos por mes durante el 2018: -->
+
+<!-- ```{r} -->
+<!-- pred.knn.box = pred.knn %>%  -->
+<!--   mutate("Mes" = month(as.Date(Fecha))) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- g.box = ggplot(pred.knn.box, aes(x = factor(Mes), y = Unidades)) + -->
+<!--   geom_boxplot() -->
+<!-- g.box -->
+<!-- ``` -->
+
 
 # Conclusiones
 
