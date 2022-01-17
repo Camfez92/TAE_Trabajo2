@@ -381,7 +381,7 @@ Un archivo en formato *.RData* puede ser encontrado en el repositario de Git-Hub
 
 A continuación se van a implentar diferentes técnicas de aprendizaje automático para realizar regresiones que permitan predecir la cantidad de vehículos que van a ser registrados diariamente en el RUNT. En la mayoría de ellos se va a apelar al paquete $\color{purple}{\texttt{caret}}$ del software de programación especializado en estadística $\color{blue}{\textsf{R}}$, el cual permite de forma sencilla implementar los diferentes modelos y verificarlos usando *cross validation*, que, en particular, será aplicado empleando diez iteraciones.
 
-```{r, warning = FALSE, message = "FALSE"}
+```{r, warning = FALSE, message = "FALSE", include=FALSE}
 library(caret)
 ```
 
@@ -496,6 +496,56 @@ plot(modelo.knn.grilla,
      xlab = "Número de vecinos (k)",
      ylab = "Raíz del error cuadrático medio (RMSE)")
 ```
+
+A continuación se muestra una gráfica de predichos vs observados con el KNN seleccionado:
+
+```{r}
+pred.total = predict(modelo.knn.grilla,
+                     newdata = db[, -c(1)])
+resultado <- data.frame(fecha = seq(as.Date("2012-01-01"), as.Date("2017-12-31"), by = "days"), 
+                         Observado = db$Unidades, 
+                         Predicho = pred.total)
+resultado_plot <- pivot_longer(resultado, 
+                                cols = c("Predicho", "Observado"),
+                                names_to = "curva",
+                                values_to = "total")
+plot <- ggplot(data = resultado_plot,
+         aes(x = fecha, y = total, 
+         group = curva, 
+         color = curva)) +
+    geom_line() +
+    ggtitle("Datos observados vs predichos entre 2012 y 2017 con KNN") +
+    labs(y = "Vehículos registrados", x = "Fecha") + 
+    theme(plot.title = element_text(hjust = 0.5)) +
+    labs(color = "Curva") + 
+    scale_color_manual(values=c("Red", "Blue"))
+   
+ggplotly(plot)
+```
+## Red neuronal
+
+Otro modelo que se desea probar es una red neuronal en python. Para ello, se se utiliza 75% de los datos para su entrenamiento y 25% para validación y por supuesto, se normalizan. El código de la red neuronal se encuentra en el repositorio de Github en un archivo titulado "NN" en la carpeta RUNT. Luego de entrenarlo, se llegó a un $R^2$ de 0.84 para entrenamiento y de 0.74 para validación. Esta es la gráfica que muestra su comportamiento para los datos entre 2012 y 2017:
+
+```{r}
+load("PredObNN.RData")
+resultado_plot <- pivot_longer(resultado, 
+                                cols = c("Predicho", "Observado"),
+                                names_to = "curva",
+                                values_to = "total")
+plot <- ggplot(data = resultado_plot,
+         aes(x = fecha, y = total, 
+         group = curva, 
+         color = curva)) +
+    geom_line() +
+    ggtitle("Datos observados vs predichos entre 2012 y 2017 con red neuronal") +
+    labs(y = "Vehículos registrados", x = "Fecha") + 
+    theme(plot.title = element_text(hjust = 0.5)) +
+    labs(color = "Curva") + 
+    scale_color_manual(values=c("Red", "Blue"))
+   
+ggplotly(plot)
+```
+Después de tener estos tres modelos se hace el análisis: el modelo de regresión lineal es el que tiene un  $R^2$ menor por lo que queda descartado, dejando así el modelo de KNN y la red neuronal. A pesar de que la red neuronal tiene un  $R^2$ decente, con la gráfica de predichos vs observados se ve que no se desempeña tan bien con los valores extremos, a diferencia del KNN que lo hace mejor. De esta manera, el modelo que se escoje es el de KNN.
 
 # Modelo
 

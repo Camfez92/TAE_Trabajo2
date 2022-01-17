@@ -74,8 +74,8 @@ def coeff_determination(y_true, y_pred):
 
 ```{python}
 model = Sequential()
-model.add(Dense(40, input_dim=7,kernel_initializer='he_uniform', activation='softmax'))
-model.add(Dense(1,  activation='softmax'))
+model.add(Dense(10, input_dim=7,kernel_initializer='he_uniform', activation='relu'))
+model.add(Dense(1,  activation='relu'))
 ```
 
 ```{python}
@@ -85,7 +85,7 @@ model.compile(loss='mse',
 ```
 
 ```{python}
-model.fit(X_train, y_train, epochs=1000, batch_size=100,verbose=0, validation_split=0.3,shuffle=True)
+model.fit(X_train, y_train, epochs=15000, batch_size=100,verbose=0, validation_split=0.3,shuffle=True)
 ```
 ```{python}
 r2Training = model.evaluate(X_train,y_train)
@@ -110,12 +110,15 @@ plot <- ggplot(data = resultado_plot,
          color = curva)) +
     geom_line() +
     ggtitle("Datos observados vs datos predichos") +
-    labs(y = "Total de accidentes", x = "Fecha") + 
+    labs(y = "Vehículos registrados", x = "Fecha") + 
     theme(plot.title = element_text(hjust = 0.5)) +
     labs(color = "Curva") + 
     scale_color_manual(values=c("Red", "Blue"))
    
 ggplotly(plot)
+```
+```{r}
+#save(resultado,file = "PredObNN.RData")
 ```
 
 
