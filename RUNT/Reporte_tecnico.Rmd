@@ -716,11 +716,11 @@ datatable(totalidad,
 
 - Los datos presentan un patron estacional, es decir, un patrón que se repite anualmente, siendo enero el mes en el que hay menos cantidad de vehículos registrados y diciembre el mes en que más se registran.
 
--Para un mejor entrenamiento del modelo, se hizo necesario agregar nuevas características a los datos, como lo fueron días laborales y tasa representativa del mercado (TRM), así como también características que se agregaron a partir de la fecha inicial dada, como lo fue el día, mes, año, día de la semana y número de la semana del año.
+- Para un mejor entrenamiento del modelo, se hizo necesario agregar nuevas características a los datos, como lo fueron días laborales y tasa representativa del mercado (TRM), así como también características que se agregaron a partir de la fecha inicial dada, como lo fue el día, mes, año, día de la semana y número de la semana del año.
 
--El mejor modelo, considerando como criterio el $R^2$, fue el de la red neuronal con 0.84 en entrenamiento y 0.74 para validación. Y el segundo mejor modelo fue KNN con $R^2 = 0.8247$  y $K=5$, pero se decide emplear el finalmente el modelo KNN ya que éste predice mejor los datos extremos, además de que la diferencia entre $R^2$ de ambos es poca.
+- El mejor modelo, considerando como criterio el $R^2$, fue el de la red neuronal con 0.84 en entrenamiento y 0.74 para validación. Y el segundo mejor modelo fue KNN con $R^2 = 0.8247$  y $K=5$, pero se decide emplear el finalmente el modelo KNN ya que éste predice mejor los datos extremos, además de que la diferencia entre $R^2$ de ambos es poca.
 
--Finalmente, los datos predichos para el primer semestre de 2018 tienen un comportamiento esperado, ya que tiene características similares a los datos originales, enero es el mes en el que menos cantidad de vehículos se registrarán y dicho valor aumentará a medida que pasan los meses.
+- Finalmente, los datos predichos para el primer semestre de 2018 tienen un comportamiento esperado, ya que tiene características similares a los datos originales, enero es el mes en el que menos cantidad de vehículos se registrarán y dicho valor aumentará a medida que pasan los meses.
 
 
 
