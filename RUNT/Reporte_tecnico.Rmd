@@ -86,7 +86,7 @@ Vale la pena mencionar los paquetes de $\color{#00008b}{\textsf{R}}$ que más se
 La base de datos que se va a emplear para proyectar el número de vehículos a registrar en el **Registro Único Nacional de Tránsito**, ***RUNT*** contiene un registro del número de vehículos que han sido registrados diariamente entre el primero de enero de 2012 (2012-01-01) y el 31 de diciembre de 2017 (2017-12-31), lo que implica que parte con solo dos variables: la fecha y el número de vehículos registrados en el RUNT en cada fecha, con 2,192 observaciones que abarcan la totalidad de días que transcurrieron entre las dos fechas límite. Así, vale la pena comenzar observando la estructura de la base de datos que va a ser empleada:
 
 $$\fbox{
-Tabla 1.
+Tabla 1: Características y descripción de los datos.
 }$$
 
 ```{r, include = FALSE}
@@ -106,7 +106,7 @@ Luego, vale la pena revisar el siguiente gráfico con el que se podrá observar 
 ```{r, echo = FALSE, warning = FALSE, message = FALSE, out.width="110%"}
 g1 <- ggplot(db, aes(x = as.Date(Fecha), y = Unidades)) +
       geom_line(size = 0.1, color = "#4d85ea") +
-      ggtitle("Número de vehículos registrados en el RUNT¹ por día",
+      ggtitle("",
               subtitle = "¹ Registro Único Nacional de Tránsito") +
       xlab("Fecha [AAAA-MM-DD]\n Figura 1:Número de vehículos registrados en el RUNT¹ por día ") +
       ylab("Vehículos registrados") +
@@ -123,7 +123,7 @@ stargazer(descr(db))
 ```
 
 $$\fbox{
-Tabla 2.
+Tabla 2: Resúmen numérico de los datos.
 }$$
 
 | Parámetro                | Valor  |
@@ -146,7 +146,7 @@ Como se observa, cada día entre los años 2012 y 2017 (inclusive) se registraro
 g2 <- ggplot(db, aes(x = Unidades)) +
       geom_histogram(fill = "#4d85ea") +
       theme_light() +
-      ggtitle("Frecuencia del número de vehículos registrados en el RUNT¹ por día",
+      ggtitle("",
               subtitle = "¹ Registro Único Nacional de Tránsito") +
       xlab("Número de vehículos registrados por día \n Figura 2: Frecuencia de vehículos registrados en el RUNT¹ por día") +
       ylab("Frecuencia absoluta")
@@ -175,7 +175,7 @@ glimpse(db)
 ```
 
 $$\fbox{
-Tabla 3.
+Tabla 3: Nueva estructura de los datos.
 }$$
 
 | Característica   | Tipo         | Primera observación | Segunda observación |
@@ -205,7 +205,7 @@ dbMesano <- dbMesano %>%
 ```{r, echo = FALSE, warning = FALSE, message = FALSE, out.width="110%"}
 tseries <- ts(dbMesano$Unidades, start = c(2012,1), end = c(2017,12), frequency = 12)
 plot(tseries,
-     main = "Número de vehículos registrados por mes",
+     main = "",
      xlab = "Mes \n Figura 3: Número de vehículos registrados mensualmente",
      ylab = "Núm. de vehíc. registrados")
 ```
@@ -231,7 +231,7 @@ dbMes$mes <- NULL
 g4 <- ggplot(dbMes, aes(x = (mesab), y = (Unidades))) +
       geom_bar(stat = "identity", fill = "#4d85ea") +
       theme_light() + 
-      ggtitle("Promedio mensual de vehículos registrados en el RUNT") +
+      ggtitle("") +
       xlab("Mes \n Figura 4: Promedio mensual de vehículos registrados en el RUNT") +
       ylab("Vehículos registrados") +
    scale_x_discrete(guide = guide_axis(angle = 30))
@@ -242,7 +242,7 @@ En la figura 4 se observa algo que fue confirmado previamente y es que diciembre
 
 ```{r, echo=FALSE, warning = FALSE, message = FALSE, out.width="110%"}
 boxplot(tseries~cycle(tseries),names=month.abb,tseries,
-     main = "Número de vehículos registrados por mes",
+     main = "",
      xlab = "Mes \n Figura 5: Boxplot vehículos registrados en el RUNT mensualmente",
      ylab = "Núm. de vehíc. registrados")
 
@@ -357,7 +357,7 @@ db <- db %>%
 Realizado lo anterior, se tiene que la tabla de datos que finalmente será considerada para poder estudiar los diferentes modelos predictivos que permitan dar con una adecuada proyección del número de vehículos registrados en el RUNT para todo el 2018 es la que se ve enseguida:
 
 $$\fbox{
-Tabla 4.
+Tabla 4: Datos definitivos.
 }$$
 
 ```{r}
@@ -376,7 +376,7 @@ save(db, file = "RUNT.RData")
 Para poder emplear el modelo con las variables requeridas del año, se va a generar una base de datos con ayuda de $\color{blue}{\textsf{R}}$ que permita determinar los valores de las variables regresoras para cada uno de los 365 días de este año. El resultado observado puede ser visto a continuación:
 
 $$\fbox{
-Tabla 5.
+Tabla 5: Datos 2018.
 }$$
 
 ```{r}
@@ -485,7 +485,7 @@ library(sjPlot)
 ```
 
 $$\fbox{
-Tabla 6.
+Tabla 6: Ajuste regresión lineal múltiple.
 }$$
 
 ```{r}
@@ -515,7 +515,7 @@ mod.knn = train(Unidades~.,
 ```
 
 $$\fbox{
-Tabla 7.
+Tabla 7: RMSE, R - CUADRADO Y MAE Para cada K.
 }$$
 
 | Núm. vecinos (k) | RMSE     | $R^2$   | MAE      |
@@ -539,7 +539,7 @@ mod.knn.scale = train(Unidades~.,
 ```
 
 $$\fbox{
-Tabla 8.
+Tabla 8:RMSE, R - CUADRADO Y MAE Para cada K (Datos con procesamiento) .
 }$$
 
 
@@ -552,7 +552,7 @@ Tabla 8.
 Y se evidencia una notable mejoría que en el caso en el que el preprocesamiento no fue realizado, pues para cada una de las tres iteraciones evaluadas ($k = 5, \ 7, \ 9$), se obtuvieron valores de $R^2$ de al menos $0.80$, lo cual es bueno. Sin embargo, es interesante evaluar si es posible mejorar estos valores al ensayar aún más iteraciones, para lo cual se generará un grilla que posibilite evaluar valores de $k$ entre uno y cien.
 
 $$\fbox{
-Tabla 9.
+Tabla 9: RMSE, R - CUADRADO Y MAE Para cada K 0-100.
 }$$
 
 ```{r}
@@ -573,8 +573,8 @@ Y como se puede observar en la tabla nueve, el mejor para el $R^2$, así como la
 
 ```{r, out.width="110%"}
 plot(modelo.knn.grilla,
-     main = "Raíz del error cuadrático medio vs. número de vecinos",
-     xlab = "Número de vecinos (k) \n: Figura 6: K óptimo por grafica de codo",
+     main = "",
+     xlab = "Número de vecinos (k) \n Figura 6: K óptimo por grafica de codo",
      ylab = "Raíz del error cuadrático medio (RMSE)")
 ```
 
@@ -595,7 +595,7 @@ plot <- ggplot(data = resultado_plot,
          group = curva, 
          color = curva)) +
     geom_line() +
-    ggtitle("Datos observados vs predichos entre 2012 y 2017 con KNN") +
+    ggtitle("") +
     labs(y = "Vehículos registrados", x = "Fecha \n Figura 7: Datos observados vs predichos entre 2012 y 2017 con KNN") + 
     theme(plot.title = element_text(hjust = 0.5)) +
     labs(color = "Curva") + 
@@ -606,7 +606,7 @@ ggplotly(plot)
 ```
 En la figura siete se puede observar que el modelo generado con KNN con $k = 5$ vecinos y haciendo preprocesamiento, esto es, normalizando los datos, ajusta muy bien la tendencia de los datos realmente observados entre los años 2012 y 2017. Sin embargo, este en este gráfico se puede observar que el modelo generado presenta dificultades para estimar los valores máximos que puedan presentarse en cada año, lo cual se refleja en el hecho de que existen múltiples barras rojas que resaltan sobre las barras azules, y esto es dado a que el modelo predice menos vehículos de los que realmente son registrados en estos casos.
 
-## Red neuronal
+## Red Neuronal
 
 Otro modelo que se desea probar es una red neuronal en $\color{cyan}{\textsf{Python}}$. Para ello, se se utiliza 75 % de los datos para su entrenamiento y 25% para validación y por supuesto, se normalizan. El código de la red neuronal se encuentra en el repositorio de Git-Hub en un archivo titulado *"NN"* en la carpeta $\texttt{RUNT}$. Luego de entrenarlo, se llegó a un $R^2$ de 0.84 para entrenamiento y de 0.74 para validación. La gráfica ocho muestra su comportamiento para los datos entre 2012 y 2017:
 
@@ -621,7 +621,7 @@ plot <- ggplot(data = resultado_plot,
          group = curva, 
          color = curva)) +
     geom_line() +
-    ggtitle("Datos observados vs predichos entre 2012 y 2017 con red neuronal") +
+    ggtitle("") +
     labs(y = "Vehículos registrados", x = "Fecha \n Figura 8: Datos observados vs predichos entre 2012 y 2017 con red neuronal") + 
     theme(plot.title = element_text(hjust = 0.5)) +
     labs(color = "Curva") + 
@@ -641,7 +641,7 @@ A continuación, en la figura 9, se observa la serie de tiempo para este modelo 
 
 
 ```{r}
-# Predicción con KNN con KNN con preprocesamiento y k = 5
+# Predicción con KNN con preprocesamiento y k = 5
 pred.knn = predict(modelo.knn.grilla,
                    newdata = yr18)
 pred.knn = as.data.frame(pred.knn)
@@ -691,7 +691,7 @@ Además, en la figura 10, se evidencia toda la serie completa: los datos reales 
 ```{r, out.width="110%"}
 g8 <- ggplot(totalidad, aes(x = as.Date(Fecha), y = Unidades)) +
       geom_line(size = 0.1, color = "#4d85ea") +
-      ggtitle("Número de vehículos registrados en el RUNT¹ por día",
+      ggtitle("",
               subtitle = "¹ Registro Único Nacional de Tránsito") +
       xlab("Fecha [AAAA-MM-DD]") +
       ylab("Vehículos registrados") +
@@ -704,13 +704,23 @@ ggplotly(g8)
 Estos datos pueden ser observados en la tabla diez:
 
 $$\fbox{
-Tabla 10. Vehículos registrados entre el 2012 y el 2018 en el RUNT.
+Tabla 10: Vehículos registrados entre el 2012 y el 2018 en el RUNT.
 }$$
 
 ```{r}
 datatable(totalidad,
           colnames = c("Observación", "Día [AAAA-MM-DD]", "Unidades registradas [vehículos]"))
 ```
+
+## CONCLUSIONES
+
+- Los datos presentan un patron estacional, es decir, un patrón que se repite anualmente, siendo enero el mes en el que hay menos cantidad de vehículos registrados y diciembre el mes en que más se registran.
+
+-Para un mejor entrenamiento del modelo, se hizo necesario agregar nuevas características a los datos, como lo fueron días laborales y tasa representativa del mercado (TRM), así como también características que se agregaron a partir de la fecha inicial dada, como lo fue el día, mes, año, día de la semana y número de la semana del año.
+
+-El mejor modelo, considerando como criterio el $R^2$, fue el de la red neuronal con 0.84 en entrenamiento y 0.74 para validación. Y el segundo mejor modelo fue KNN con $R^2 = 0.8247$  y $K=5$, pero se decide emplear el finalmente el modelo KNN ya que éste predice mejor los datos extremos, además de que la diferencia entre $R^2$ de ambos es poca.
+
+-Finalmente, los datos predichos para el primer semestre de 2018 tienen un comportamiento esperado, ya que tiene características similares a los datos originales, enero es el mes en el que menos cantidad de vehículos se registrarán y dicho valor aumentará a medida que pasan los meses.
 
 
 
